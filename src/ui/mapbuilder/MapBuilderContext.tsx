@@ -247,7 +247,7 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const loadEurasia = useCallback(() => {
-    fetch('/eurasia.worldmap.json')
+    fetch(`${import.meta.env.BASE_URL}eurasia.worldmap.json`)
       .then(r => r.text())
       .then(loadMap)
       .catch(err => console.error('Failed to load Eurasia map:', err));

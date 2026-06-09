@@ -307,7 +307,7 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loadEurasia = useCallback(() => {
-    fetch('/eurasia.worldmap.json')
+    fetch(`${import.meta.env.BASE_URL}eurasia.worldmap.json`)
       .then(r => r.json())
       .then((data: SavedCustomMap) => {
         const tiles: MapBuilderTile[] = data.tiles.map(t => ({
