@@ -1,15 +1,8 @@
 import React, { useRef } from 'react';
 import { useMapBuilder } from './MapBuilderContext';
 import { TERRAIN_COLORS } from '../../renderer/MapModes';
-import type { TerrainType } from '../../types/world';
 import type { WorldData } from '../../types/world';
 import styles from './MapBuilderPanel.module.css';
-
-const LAND_BIOMES: TerrainType[] = ['plains', 'river_valley', 'forest', 'hills', 'desert', 'tundra', 'mountains'];
-const BIOME_LABELS: Record<string, string> = {
-  plains: 'Plains', river_valley: 'River Valley', forest: 'Forest',
-  hills: 'Hills', desert: 'Desert', tundra: 'Tundra', mountains: 'Mountains',
-};
 
 const BIOME_LEGEND = [
   { terrain: 'river_valley', label: 'River Valley', productivity: '~0.93' },
@@ -79,19 +72,24 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
         </div>
       </div>
 
-      {/* Biome Selector */}
+      {/* Biome Selector — unified card grid with swatch, name, productivity */}
       {(state.tool === 'paint-land' || state.tool === 'paint-biome') && (
         <div className={styles.section}>
           <div className={styles.sectionLabel}>BIOME</div>
           <div className={styles.biomeGrid}>
-            {LAND_BIOMES.map(biome => (
+            {BIOME_LEGEND.filter(b => b.terrain !== 'ocean').map(({ terrain, label, productivity }) => (
               <button
-                key={biome}
-                className={`${styles.biomeSwatch} ${state.selectedBiome === biome ? styles.biomeSwatchActive : ''}`}
-                style={{ background: (TERRAIN_COLORS as Record<string, string>)[biome] ?? '#888' }}
-                title={BIOME_LABELS[biome] ?? biome}
-                onClick={() => ctx.setSelectedBiome(biome)}
-              />
+                key={terrain}
+                className={`${styles.biomeCard} ${state.selectedBiome === terrain ? styles.biomeCardActive : ''}`}
+                onClick={() => ctx.setSelectedBiome(terrain as Parameters<typeof ctx.setSelectedBiome>[0])}
+              >
+                <span
+                  className={styles.biomeSwatch}
+                  style={{ background: (TERRAIN_COLORS as Record<string, string>)[terrain] ?? '#888' }}
+                />
+                <span>{label}</span>
+                <span className={styles.biomeProductivity}>{productivity}</span>
+              </button>
             ))}
           </div>
         </div>
@@ -146,25 +144,8 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
       {/* Undo/Redo */}
       <div className={styles.section}>
         <div className={styles.row}>
-          <button className={styles.btn} onClick={ctx.undo}>↩ Undo</button>
+          <button className={styles.btn} onClick={ctx.undo}>↩ Undo Stroke</button>
           <button className={styles.btn} onClick={ctx.redo}>↪ Redo</button>
-        </div>
-      </div>
-
-      {/* Biome Reference */}
-      <div className={styles.section}>
-        <div className={styles.sectionLabel}>BIOME REFERENCE</div>
-        <div className={styles.legendList}>
-          {BIOME_LEGEND.map(({ terrain, label, productivity }) => (
-            <div key={terrain} className={styles.legendRow}>
-              <div
-                className={styles.legendSwatch}
-                style={{ background: (TERRAIN_COLORS as Record<string, string>)[terrain] ?? '#555' }}
-              />
-              <span className={styles.legendLabel}>{label}</span>
-              <span className={styles.legendProductivity}>{productivity}</span>
-            </div>
-          ))}
         </div>
       </div>
 

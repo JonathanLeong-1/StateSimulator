@@ -1,6 +1,6 @@
 .panel {
-  width: 220px;
-  min-width: 220px;
+  width: 250px;
+  min-width: 250px;
   background: var(--color-surface);
   border-right: 1px solid var(--color-border);
   overflow-y: auto;
@@ -8,13 +8,6 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-accent);
-  margin-bottom: 8px;
 }
 
 .section {
@@ -30,9 +23,11 @@
 }
 
 .label {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--color-text-muted);
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .input {
@@ -57,18 +52,19 @@
 
 .btn {
   flex: 1;
-  background: var(--color-bg);
+  background: var(--color-surface-2);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--color-text);
-  padding: 5px 8px;
+  padding: 6px 10px;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .btn:hover:not(:disabled) {
-  background: var(--color-border);
+  border-color: var(--color-accent);
+  color: var(--color-accent-light);
 }
 
 .btn:disabled {
@@ -77,19 +73,25 @@
 }
 
 .primaryBtn {
-  flex: 1;
-  background: var(--color-accent);
+  width: 100%;
+  background: var(--grad-primary);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   color: #fff;
-  padding: 5px 8px;
-  font-size: 12px;
+  padding: 0;
+  height: 44px;
+  font-size: 15px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow: 0 0 0 rgba(124,58,237,0);
+  transition: box-shadow 0.2s, filter 0.2s;
 }
 
 .primaryBtn:hover {
-  opacity: 0.85;
+  box-shadow: 0 0 16px var(--color-accent-glow);
+  filter: brightness(1.1);
 }
 
 .toggleLabel {
@@ -108,22 +110,29 @@
 }
 
 .modeBtn {
-  background: var(--color-bg);
+  background: var(--color-surface-2);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--color-text-muted);
-  padding: 4px;
+  padding: 6px 4px;
   font-size: 11px;
   cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.modeBtn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent-light);
 }
 
 .modeActive {
   background: var(--color-accent);
   border: 1px solid var(--color-accent);
-  border-radius: 4px;
+  border-radius: 6px;
   color: #fff;
-  padding: 4px;
+  padding: 6px 4px;
   font-size: 11px;
   cursor: pointer;
   font-weight: 600;
+  box-shadow: 0 0 8px var(--color-accent-glow);
 }

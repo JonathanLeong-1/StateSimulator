@@ -1,0 +1,170 @@
+.bar {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  gap: 0;
+  padding: 28px 44px;
+  background: rgba(12, 12, 22, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(124, 58, 237, 0.35);
+  border-radius: 28px;
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(124, 58, 237, 0.12);
+  white-space: nowrap;
+  min-width: 660px;
+}
+
+/* Column separators */
+.colLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  padding-right: 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.colCenter {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0 28px;
+}
+
+.colRight {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  padding-left: 20px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Left column */
+.stepRow {
+  display: flex;
+  gap: 6px;
+}
+
+.speedRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speedLabelSlow {
+  font-size: 9px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.speedLabelFast {
+  font-size: 9px;
+  color: var(--color-accent-light);
+  flex-shrink: 0;
+}
+
+.speedSlider {
+  width: 160px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+/* Center column */
+.primaryBtn {
+  align-self: stretch;
+  min-height: 110px;
+  height: auto;
+  min-width: 180px;
+  background: var(--grad-primary);
+  border: none;
+  border-radius: 16px;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  cursor: pointer;
+  padding: 0 24px;
+  transition: box-shadow 0.2s, filter 0.2s;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+}
+
+.primaryBtn:hover {
+  box-shadow: 0 0 28px var(--color-accent-glow), 0 4px 20px rgba(124, 58, 237, 0.4);
+  filter: brightness(1.12);
+}
+
+/* Right column */
+.viewModeLabel {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+}
+
+.modeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+/* Buttons */
+.btn {
+  height: 48px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  color: var(--color-text);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 18px;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent-light);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.modeBtn {
+  height: 44px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 9px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0 14px;
+  transition: all 0.15s;
+}
+
+.modeBtn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent-light);
+}
+
+.modeBtnActive {
+  height: 44px;
+  background: var(--grad-primary);
+  border: none;
+  border-radius: 9px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 14px;
+  box-shadow: 0 0 10px var(--color-accent-glow);
+}

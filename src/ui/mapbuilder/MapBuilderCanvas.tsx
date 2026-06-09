@@ -162,6 +162,7 @@ export function MapBuilderCanvas() {
     if (idx !== null) {
       isPaintingRef.current = true;
       lastPaintedIdxRef.current = idx;
+      ctx.beginStroke();
       ctx.applyBrush(idx);
     }
   }, [ctx]);

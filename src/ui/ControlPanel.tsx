@@ -47,13 +47,13 @@ export function ControlPanel() {
 
   return (
     <div className={styles.panel}>
-      <h2 className={styles.title}>World Simulator</h2>
 
+      {/* Play/Pause — most prominent */}
       <section className={styles.section}>
+        <button className={styles.primaryBtn} onClick={playPause}>
+          {isPlaying ? '⏸ PAUSE' : '▶ PLAY'}
+        </button>
         <div className={styles.buttonRow}>
-          <button className={styles.primaryBtn} onClick={playPause}>
-            {isPlaying ? '⏸ Pause' : '▶ Play'}
-          </button>
           <button className={styles.btn} onClick={stepOnce} disabled={isPlaying}>
             ⏭ Step
           </button>
@@ -64,22 +64,27 @@ export function ControlPanel() {
         <div className={styles.buttonRow}>
           <button className={styles.btn} onClick={resetSim}>↺ Reset</button>
           <button className={styles.btn} onClick={loadEurasia}>🗺 Eurasia</button>
-        </div>
-        <div className={styles.buttonRow}>
-          <button className={styles.btn} onClick={randomizeContinents}>🌍 Random Continents</button>
+          <button className={styles.btn} onClick={randomizeContinents}>🌍 Random</button>
         </div>
       </section>
 
+      {/* Map Mode — prominent 2×2 grid */}
       <section className={styles.section}>
-        <label className={styles.label}>Seed</label>
-        <input
-          className={styles.input}
-          defaultValue={seed}
-          onKeyDown={handleSeedKeyDown}
-          placeholder="Press Enter to apply"
-        />
+        <label className={styles.label}>Map Mode</label>
+        <div className={styles.modeButtons}>
+          {(['political', 'terrain', 'productivity', 'obstacle'] as const).map(mode => (
+            <button
+              key={mode}
+              className={mapMode === mode ? styles.modeActive : styles.modeBtn}
+              onClick={() => setUIState(prev => ({ ...prev, mapMode: mode }))}
+            >
+              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+            </button>
+          ))}
+        </div>
       </section>
 
+      {/* Speed */}
       <section className={styles.section}>
         <label className={styles.label}>Speed: {speed}ms/step</label>
         <input
@@ -90,6 +95,18 @@ export function ControlPanel() {
         />
       </section>
 
+      {/* Seed */}
+      <section className={styles.section}>
+        <label className={styles.label}>Seed</label>
+        <input
+          className={styles.input}
+          defaultValue={seed}
+          onKeyDown={handleSeedKeyDown}
+          placeholder="Press Enter to apply"
+        />
+      </section>
+
+      {/* Simulation parameters */}
       <section className={styles.section}>
         <label className={styles.label}>Conflict Frequency: {settings.baseConflictRate.toFixed(2)}</label>
         <input type="range" min={0.1} max={1.0} step={0.05} value={settings.baseConflictRate}
@@ -117,6 +134,7 @@ export function ControlPanel() {
           className={styles.slider} />
       </section>
 
+      {/* Toggles */}
       <section className={styles.section}>
         <label className={styles.toggleLabel}>
           <input type="checkbox" checked={settings.enableSeaConquest}
@@ -140,21 +158,7 @@ export function ControlPanel() {
         </label>
       </section>
 
-      <section className={styles.section}>
-        <label className={styles.label}>Map Mode</label>
-        <div className={styles.modeButtons}>
-          {(['political', 'terrain', 'productivity', 'obstacle'] as const).map(mode => (
-            <button
-              key={mode}
-              className={mapMode === mode ? styles.modeActive : styles.modeBtn}
-              onClick={() => setUIState(prev => ({ ...prev, mapMode: mode }))}
-            >
-              {mode.charAt(0).toUpperCase() + mode.slice(1)}
-            </button>
-          ))}
-        </div>
-      </section>
-
+      {/* Save / Load / Export */}
       <section className={styles.section}>
         <div className={styles.buttonRow}>
           <button className={styles.btn} onClick={saveJSON}>💾 Save</button>

@@ -1,4 +1,4 @@
-# World Simulator
+# State Simulator
 
 A browser-based political geography simulator. Watch states form, expand, fragment, and consolidate across a procedurally generated hex-grid world.
 

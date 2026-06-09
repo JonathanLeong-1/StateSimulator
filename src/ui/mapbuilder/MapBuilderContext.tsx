@@ -21,6 +21,7 @@ const HEIGHT = 100;
 interface MapBuilderContextValue {
   state: MapBuilderState;
   applyBrush: (centerIdx: number) => void;
+  beginStroke: () => void;
   setTool: (tool: MapBuilderState['tool']) => void;
   setBrushSize: (size: number) => void;
   setSelectedBiome: (biome: TerrainType) => void;
@@ -61,12 +62,17 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
 
   const historyRef = useRef<MapBuilderTile[][]>([]);
   const historyIndexRef = useRef<number>(-1);
+  const strokePendingRef = useRef(false);
 
   const pushHistory = useCallback((tiles: MapBuilderTile[]) => {
     historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
     historyRef.current.push(tiles.map(t => ({ ...t })));
     if (historyRef.current.length > 50) historyRef.current.shift();
     historyIndexRef.current = historyRef.current.length - 1;
+  }, []);
+
+  const beginStroke = useCallback(() => {
+    strokePendingRef.current = true;
   }, []);
 
   const hexDist = (q1: number, r1: number, q2: number, r2: number): number => {
@@ -109,7 +115,10 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
         }
       }
 
-      pushHistory(prev.tiles);
+      if (strokePendingRef.current) {
+        pushHistory(prev.tiles);
+        strokePendingRef.current = false;
+      }
 
       const rng = mulberry32(Math.floor(Math.random() * 999999));
 
@@ -272,7 +281,7 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
   }, [state.tiles, state.width, state.height]);
 
   const value: MapBuilderContextValue = {
-    state, applyBrush, setTool, setBrushSize, setSelectedBiome,
+    state, applyBrush, beginStroke, setTool, setBrushSize, setSelectedBiome,
     setProductivityValue, setRandomEnabled, setName,
     generateRandomContinents, clearMap, saveMap, loadMap, loadEurasia,
     undo, redo, convertToWorldData,
