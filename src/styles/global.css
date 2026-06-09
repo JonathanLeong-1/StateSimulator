@@ -1,14 +1,25 @@
 :root {
-  --color-bg: #0f1117;
-  --color-surface: #1a1f2e;
-  --color-border: #2d3748;
-  --color-text: #e2e8f0;
-  --color-text-muted: #94a3b8;
-  --color-accent: #4f9eff;
-  --color-ocean: #1a3a5c;
-  --radius-card: 8px;
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --color-bg:           #0a0a12;
+  --color-surface:      #12121e;
+  --color-surface-2:    #1a1a2e;
+  --color-border:       rgba(124, 58, 237, 0.18);
+  --color-text:         #e2e8f0;
+  --color-text-muted:   #94a3b8;
+
+  /* Accent — deep purple */
+  --color-accent:       #7c3aed;
+  --color-accent-light: #a855f7;
+  --color-accent-glow:  rgba(124, 58, 237, 0.35);
+
+  /* Button gradients */
+  --grad-primary:       linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  --grad-primary-hover: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+
+  /* Misc */
+  --color-ocean:        #1a3a5c;
+  --radius-card:        10px;
+  --shadow-card:        0 4px 24px rgba(0,0,0,0.6);
+  --font-sans:          'Inter', system-ui, -apple-system, sans-serif;
 }
 
 *,

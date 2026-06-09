@@ -144,12 +144,32 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
     a.click();
   }, []);
 
-  // Initialize on mount
+  // Initialize on mount — load Eurasia by default, fall back to circle world
   useEffect(() => {
-    const { world: w, engine } = buildCircleWorld(settingsRef.current);
-    engineRef.current = engine;
-    setWorld(w);
-    setSimState(engine.getState());
+    fetch(`${import.meta.env.BASE_URL}eurasia.worldmap.json`)
+      .then(r => r.json())
+      .then((data: SavedCustomMap) => {
+        const tiles: MapBuilderTile[] = data.tiles.map(t => ({
+          index: t.index,
+          q: t.index % data.width,
+          r: Math.floor(t.index / data.width),
+          terrain: t.terrain,
+          productivityOverride: t.productivityOverride,
+        }));
+        const worldData = WorldGenerator.fromCustomMap(tiles, data.width, data.height);
+        const engine = new SimulationEngine(worldData, settingsRef.current);
+        engine.initialize();
+        engineRef.current = engine;
+        setWorld(worldData);
+        setSimState(engine.getState());
+      })
+      .catch(() => {
+        // fallback if asset unavailable (e.g., unit tests)
+        const { world: w, engine } = buildCircleWorld(settingsRef.current);
+        engineRef.current = engine;
+        setWorld(w);
+        setSimState(engine.getState());
+      });
   }, []);
 
   // Advance one step and record animations via ownership diff

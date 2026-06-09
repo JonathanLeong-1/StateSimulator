@@ -15,7 +15,7 @@ export function Tooltip() {
   return (
     <div style={{
       position: 'fixed',
-      bottom: 60,
+      bottom: 16,
       left: '50%',
       transform: 'translateX(-50%)',
       background: 'rgba(26,31,46,0.97)',

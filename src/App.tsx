@@ -1,10 +1,12 @@
 import { useCallback, useState } from 'react';
 import { SimulationProvider, useSimulation } from './SimulationContext';
 import { MapCanvas } from './ui/MapCanvas';
-import { ControlPanel } from './ui/ControlPanel';
+import { BottomBar } from './ui/BottomBar';
+import { SimSettings } from './ui/SimSettings';
 import { StatsPanel } from './ui/StatsPanel';
-import { Charts } from './ui/Charts';
 import { InfoPanel } from './ui/InfoPanel';
+import { WelcomeSplash } from './ui/WelcomeSplash';
+import { InfoModal } from './ui/InfoModal';
 import { Tooltip } from './ui/Tooltip';
 import { EducationPanel } from './ui/EducationPanel';
 import { Legend } from './ui/Legend';
@@ -16,6 +18,8 @@ import styles from './styles/App.module.css';
 
 function AppInner() {
   const [appMode, setAppMode] = useState<'simulate' | 'build'>('simulate');
+  const [showSplash, setShowSplash] = useState(true);
+  const [showInfo, setShowInfo] = useState(false);
   const simContext = useSimulation();
 
   const handleRunSimulation = useCallback((worldData: WorldData) => {
@@ -23,10 +27,16 @@ function AppInner() {
     setAppMode('simulate');
   }, [simContext]);
 
+  const handleDismissSplash = useCallback(() => {
+    setShowSplash(false);
+    simContext.loadEurasia();
+    simContext.setUIState(prev => ({ ...prev, isPlaying: false, speed: 300 }));
+  }, [simContext]);
+
   return (
     <div className={styles.app}>
       <header className={styles.topBar}>
-        <span className={styles.appTitle}>🌍 World Simulator</span>
+        <span className={styles.appTitle}>🌍 State Simulator</span>
         <button
           className={styles.modeToggleBtn}
           onClick={() => setAppMode(m => m === 'simulate' ? 'build' : 'simulate')}
@@ -34,16 +44,30 @@ function AppInner() {
           {appMode === 'simulate' ? '🗺 Map Builder' : '▶ Simulator'}
         </button>
         <Legend />
+        <div className={styles.headerRight}>
+          {simContext.simState && (
+            <span className={styles.stateCounter}>
+              {simContext.simState.stats.stateCount} states
+            </span>
+          )}
+          <button
+            className={styles.infoBtn}
+            onClick={() => setShowInfo(true)}
+            aria-label="How it works"
+          >
+            ℹ
+          </button>
+        </div>
       </header>
+      {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
       {appMode === 'simulate' ? (
         <div className={styles.main}>
-          <ControlPanel />
           <MapCanvas />
-          <div className={styles.rightColumn}>
-            <StatsPanel />
-            <Charts />
-            <InfoPanel />
-          </div>
+          <SimSettings />
+          <StatsPanel />
+          <InfoPanel />
+          {showSplash && <WelcomeSplash onDismiss={handleDismissSplash} />}
+          <BottomBar />
         </div>
       ) : (
         <MapBuilderProvider>
