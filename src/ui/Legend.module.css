@@ -1,0 +1,42 @@
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.badge {
+  font-size: 12px;
+  color: var(--color-text);
+  font-weight: 600;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.gradient {
+  width: 80px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.gradLabel {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}

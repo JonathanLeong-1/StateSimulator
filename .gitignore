@@ -1,0 +1,5 @@
+# Live runtime data — not committed
+.agent-events/events*.jsonl
+
+# Dependencies
+node_modules/

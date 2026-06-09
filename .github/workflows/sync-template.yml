@@ -1,0 +1,176 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Template Sync — Automatically creates a PR when the upstream template
+# repository publishes a new release or on a weekly schedule.
+#
+# HOW TO USE:
+#   1. Copy this workflow into child repos that inherit from the template
+#   2. Set the TEMPLATE_REPO variable below to your org's template repo
+#   3. The workflow runs weekly (or manually) and creates a PR with updates
+#   4. Review the PR — project-specific files are protected by .gitattributes
+#
+# REQUIREMENTS:
+#   - The child repo must have the "upstream" remote configured
+#     (the sync script handles this, or you can set TEMPLATE_REPO below)
+#   - .gitattributes must be present with merge=ours rules
+# ──────────────────────────────────────────────────────────────────────────────
+name: Sync Template Updates
+
+on:
+  schedule:
+    # Weekly on Monday at 09:00 UTC — adjust as needed
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      template_ref:
+        description: "Template branch or tag to sync from (default: main)"
+        required: false
+        default: "main"
+
+# ── CONFIGURE THIS ──────────────────────────────────────────────────────────
+env:
+  # Replace with your organization's template repo (HTTPS clone URL)
+  TEMPLATE_REPO: "https://github.com/mobius-logic/agentic-vibe-coding.git"
+  TEMPLATE_BRANCH: ${{ github.event.inputs.template_ref || 'main' }}
+  SYNC_BRANCH: "chore/sync-template-updates"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: |
+          if git remote get-url upstream &>/dev/null; then
+            git remote set-url upstream "${{ env.TEMPLATE_REPO }}"
+          else
+            git remote add upstream "${{ env.TEMPLATE_REPO }}"
+          fi
+
+      - name: Configure ours merge driver
+        run: git config merge.ours.driver true
+
+      - name: Fetch upstream template
+        run: git fetch upstream "${{ env.TEMPLATE_BRANCH }}"
+
+      - name: Check for updates
+        id: check
+        run: |
+          MERGE_BASE=$(git merge-base HEAD "upstream/${{ env.TEMPLATE_BRANCH }}" 2>/dev/null || echo "none")
+          UPSTREAM_HEAD=$(git rev-parse "upstream/${{ env.TEMPLATE_BRANCH }}")
+
+          if [ "$MERGE_BASE" = "none" ]; then
+            echo "has_updates=true" >> "$GITHUB_OUTPUT"
+            echo "First sync — unrelated histories"
+          elif [ "$UPSTREAM_HEAD" = "$MERGE_BASE" ]; then
+            echo "has_updates=false" >> "$GITHUB_OUTPUT"
+            echo "Already up to date"
+          else
+            echo "has_updates=true" >> "$GITHUB_OUTPUT"
+            COMMIT_COUNT=$(git rev-list "$MERGE_BASE".."upstream/${{ env.TEMPLATE_BRANCH }}" --count)
+            echo "Found $COMMIT_COUNT new commit(s) in template"
+          fi
+
+      - name: Create sync branch and merge
+        if: steps.check.outputs.has_updates == 'true'
+        run: |
+          # Delete existing sync branch if present
+          git branch -D "${{ env.SYNC_BRANCH }}" 2>/dev/null || true
+          git push origin --delete "${{ env.SYNC_BRANCH }}" 2>/dev/null || true
+
+          # Create sync branch from current main
+          git checkout -b "${{ env.SYNC_BRANCH }}"
+
+          # Merge upstream (--no-edit for automatic commit message)
+          git merge "upstream/${{ env.TEMPLATE_BRANCH }}" \
+            --no-edit \
+            -m "chore(template): sync with upstream template $(date +%Y-%m-%d)" \
+            --allow-unrelated-histories || true
+
+          # If there are conflicts, auto-resolve project files by keeping ours
+          if [ -n "$(git diff --name-only --diff-filter=U)" ]; then
+            echo "Resolving conflicts in project-specific files..."
+            for path in .plans .agent-logs README.md; do
+              if git diff --name-only --diff-filter=U | grep -q "^${path}"; then
+                git checkout --ours -- "$path" 2>/dev/null || true
+                git add "$path" 2>/dev/null || true
+              fi
+            done
+
+            # Check if there are remaining conflicts
+            REMAINING=$(git diff --name-only --diff-filter=U)
+            if [ -n "$REMAINING" ]; then
+              echo "::warning::Unresolved conflicts in: $REMAINING"
+              echo "These will need manual resolution in the PR."
+            fi
+
+            git commit --no-edit || true
+          fi
+
+          git push origin "${{ env.SYNC_BRANCH }}" --force-with-lease
+
+      - name: Create Pull Request
+        if: steps.check.outputs.has_updates == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `${context.repo.owner}:${process.env.SYNC_BRANCH}`,
+              state: 'open'
+            });
+
+            if (prs.length > 0) {
+              console.log(`PR already exists: #${prs[0].number}`);
+              return;
+            }
+
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'chore(template): sync with upstream template',
+              head: process.env.SYNC_BRANCH,
+              base: 'main',
+              body: [
+                '## Template Sync',
+                '',
+                'This PR merges the latest changes from the upstream template repository.',
+                '',
+                '### What gets updated',
+                '- `.github/agents/` — Agent role definitions',
+                '- `.github/hooks/` — Safety gates',
+                '- `.github/prompts/` — Slash command workflows',
+                '- `.github/instructions/` — Coding standards',
+                '- `.devcontainer/` — Codespaces environment',
+                '- `TEMPLATE-GUIDE.md` — Template documentation',
+                '- `scripts/` — Sync tooling',
+                '',
+                '### What is protected (not overwritten)',
+                '- `.plans/` — Your approved plans',
+                '- `.agent-logs/` — Your agent session logs',
+                '- `README.md` — Your project documentation',
+                '',
+                '### Review checklist',
+                '- [ ] Verify no project-specific files were overwritten',
+                '- [ ] Check for breaking changes in agent definitions',
+                '- [ ] Run tests if applicable',
+                '',
+                '*Auto-generated by the template sync workflow.*'
+              ].join('\n')
+            });
+
+            console.log(`Created PR #${pr.number}`);

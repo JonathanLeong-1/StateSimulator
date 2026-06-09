@@ -1,0 +1,127 @@
+﻿
+## 2026-04-15 22:01:22 — Session Summary
+- **Project**: Execution Mode Determination Phase (template enhancement)
+- **Architecture Plan**: .plans/2026-04-15-220122-architecture-execution-mode-determination.md
+- **Architecture Style**: Documentation/configuration change (agent definitions + docs)
+- **Workstreams Identified**:
+  - Architect Agent Definition → @backend-lead (Wave 1)
+  - Template Guide & Runbook → @frontend-lead (Wave 2)
+  - Project Instructions & Prompt → @infra-lead (Wave 2)
+- **Decisions Made**: Auto-detect with confirmation, multi-phase wave model, constrained parallel support, separate Launch Plan file in .plans/, sequential fallback always included, backward-compatible defaults
+- **Open Questions**: None — all resolved during discovery
+- **Delegation Mode**: manual (handshake payloads prepared for copy-paste)
+- **Status**: approved / ready for delegation
+
+## 2026-04-16 23:57:06 — Session Summary
+- **Project**: Agent Monitor Dashboard v2 — full redesign
+- **Architecture Plan**: .plans/2026-04-16-233714-architecture-dashboard-v2.md
+- **Architecture Style**: Single-process Node.js server + vanilla JS SPA with pure SVG graph
+- **Execution Mode**: sequential
+- **Launch Plan**: .plans/2026-04-16-233714-launch-plan-dashboard-v2.md
+- **Workstreams Identified**:
+  - dashboard-v2 → @frontend-lead (Wave 1 of 1)
+- **Decisions Made**:
+  - Pure SVG for agent spawn graph (no external deps)
+  - SSE + file-based JSONL events (fs.watch with 100ms debounce)
+  - New event types: session-start, thinking, todo-update; spawned now has parent field
+  - SessionState class replaces 6-file collectors system
+  - Full session wipe on session-start event
+  - Port 4820 retained, dark theme
+  - marked optional dep for plan markdown rendering
+- **Open Questions**: None
+- **Delegation Mode**: automated (invoked @frontend-lead directly)
+- **Status**: delegated / implementation complete on feature/frontend/dashboard-v2
+- **Test Results**: 42/42 passing (18 state + 9 emit-event + 15 server)
+
+## 2026-04-20 17:53:48 — Session Summary
+- **Project**: Multi-Workstream Dashboard Event Aggregation (template enhancement)
+- **Architecture Plan**: .plans/template/2026-04-20-171154-architecture-multi-workstream-events.md
+- **Architecture Style**: Additive enhancement to existing Node.js server + vanilla JS SPA
+- **Execution Mode**: sequential
+- **Launch Plan**: .plans/template/2026-04-20-171154-launch-plan-multi-workstream-events.md
+- **Feature Fingerprint**: multi-workstream-dashboard-events
+- **Workstreams Identified**:
+  - core-pipeline → @backend-lead (Wave 1)
+  - dashboard-ui → @frontend-lead (Wave 2)
+  - agent-definitions → @infra-lead (Wave 2)
+- **Decisions Made**:
+  - Per-workstream event files (events-<workstream>.jsonl) instead of single shared file
+  - Git orphan branch (agent-events) for cross-Codespace event transport
+  - push-events.js and pull-events.js CLIs for git-based event transport
+  - Multi-file watching in server.js with per-file byte offsets
+  - DASHBOARD_GIT_POLL=true opt-in for automatic cross-Codespace polling
+  - Workstream badges and filter toggle buttons in dashboard UI
+  - All agent definitions updated with --workstream flags and push-events.js calls
+  - Backward compatible — single-workstream mode works identically to before
+  - Same-machine parallel supported via per-workstream files on shared filesystem
+  - Cross-Codespace parallel supported via git orphan branch transport
+- **Open Questions**: None
+- **Delegation Mode**: automated (all 3 leads invoked directly)
+- **Status**: all 3 workstreams complete on feature/template/multi-workstream-events
+- **Test Results**: 73/74 passing (1 pre-existing Windows shell quoting issue in --todos test)
+- **Commits**: 28af75a (core pipeline), 4dd4d13 (dashboard UI), 277b828 (agent definitions)
+- **Total Changes**: 28 files changed, +1792/-128 lines
+
+## 2026-04-24 22:49:18 — Session Summary
+- **Project**: Non-Coder Agent Tool Enforcement (template enhancement)
+- **Architecture Plan**: .plans/template/2026-04-24-223237-architecture-non-coder-tool-enforcement.md
+- **Architecture Style**: Documentation/configuration change (agent definitions + project standards)
+- **Execution Mode**: sequential
+- **Launch Plan**: .plans/template/2026-04-24-223237-launch-plan-non-coder-tool-enforcement.md
+- **Feature Fingerprint**: non-coder-tool-enforcement
+- **Workstreams Identified**:
+  - template-enforcement → @infra-lead (Wave 1)
+- **Decisions Made**:
+  - Added FORBIDDEN ACTIONS + HARD DELEGATION CONSTRAINT sections to architect.agent.md (matching lead agent pattern)
+  - Added FORBIDDEN ACTIONS + HARD DELEGATION CONSTRAINT sections to code-reviewer.agent.md
+  - Expanded Tool Enforcement section in copilot-instructions.md with Agent Role Matrix table covering all agent categories
+  - Added section 7 (Non-Coder Agent Tool Restrictions) to strict-delegation-protocol.md
+  - Architect may only create/edit files in `.plans/` and own session log via execute
+  - Code-reviewer execute restricted to git diff, read-only inspection, dashboard events, and own log
+  - General rule: only @developer, @tester, and @docs-writer may create or modify repo files
+- **Open Questions**: Pre-existing test failure in emit-event --todos parsing (unrelated, 73/74 pass)
+- **Delegation Mode**: automated (invoked @infra-lead which delegated to @developer)
+- **Status**: implementation complete on feature/template/non-coder-tool-enforcement
+- **Test Results**: 73/74 pass (1 pre-existing failure unrelated to changes)
+
+## 2026-04-25 22:28:08 — Session Summary
+- **Project**: Subagent Unavailable Fallback Protocol (template enhancement)
+- **Architecture Plan**: .plans/template/2026-04-25-222808-architecture-subagent-fallback.md
+- **Architecture Style**: Documentation/configuration + minor dashboard code change
+- **Execution Mode**: sequential
+- **Launch Plan**: .plans/template/2026-04-25-222808-launch-plan-subagent-fallback.md
+- **Feature Fingerprint**: subagent-unavailable-fallback
+- **Workstreams Identified**:
+  - agent-definitions -> @infra-lead (Wave 1, session 1)
+  - dashboard-ui -> @frontend-lead (Wave 1, session 2)
+- **Decisions Made**:
+  - Tiered fallback: Tier 1 (human-relay) + Tier 2 (self-execution with blanket approval)
+  - Upfront detection at session start (before Gate 0)
+  - Add edit tool to leads conditionally (YAML permanent, instructions restrict to Tier 2)
+  - Separate logs per role in Tier 2 (developer-log, tester-log, code-reviewer-log, docs-writer-log)
+  - New fallback-mode dashboard event with tier-1/tier-2 detail
+  - Architect only supports Tier 1 (no self-execution)
+- **Open Questions**: None
+- **Delegation Mode**: manual (payloads prepared for copy-paste)
+- **Status**: approved / ready for delegation
+
+## 2026-05-05 14:43:07 — Session Summary
+- **Project**: Template Workflow Enhancements (Modular Bias, Test Lead, Docs Update)
+- **Architecture Plan**: .plans/template/2026-05-05-144307-architecture-modular-test-lead.md
+- **Architecture Style**: template infrastructure (modular agent workflow changes)
+- **Execution Mode**: sequential
+- **Launch Plan**: .plans/template/2026-05-05-144307-launch-plan-modular-test-lead.md
+- **Feature Fingerprint**: template-workflow-modular-test-lead
+- **Workstreams Identified**:
+  - template-infra → @infra-lead (8 tasks, all file modifications)
+- **Decisions Made**:
+  - Modular architecture is strong default with rare justified exceptions
+  - Test-lead is cross-cutting (single agent for all workstreams)
+  - Test-lead runs parallel with development (Gate 2)
+  - Team leads still invoke @tester at Gate 3 using test-lead specs
+  - Test-lead writes specs via terminal (no edit tool) like architect writes plans
+  - New .test-specs/ directory with project/template split
+  - Gate 2.5 is soft gate (fallback to developer suggested tests if specs not ready)
+- **Open Questions**: None
+- **Delegation Mode**: manual (awaiting human to invoke @infra-lead)
+- **Status**: approved / ready for delegation

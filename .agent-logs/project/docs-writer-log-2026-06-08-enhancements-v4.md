@@ -1,0 +1,11 @@
+## 2026-06-08 04:12:35 — Session Summary
+- **Plan**: .plans/project/2026-06-08-launch-plan-enhancements-v4.md
+- **Branch**: feature/ui/world-simulator-enhancements-v4
+- **Commit**: 0eb3cdb
+- **Tasks Completed**:
+  - Updated Features section in README.md to document always-on state color overlay (all map modes), complete state borders (including coastlines), edge flash animations (gold conquest / red secession), and state name labels (3+ tile threshold, halo rendering, zoom threshold)
+  - Updated Map Modes table to reflect that all four modes now show the state color tint and bold borders
+  - Replaced superseded v3 Political map mode description with accurate v4 descriptions
+- **Files Changed**: README.md
+- **Lessons Learned**: When multiple features change the same UI concept (overlay, borders), consolidate into a clear ordered bullet list at the top of the Features section rather than burying updates inside a single map mode entry — makes cross-mode behaviors obvious to readers
+- **Status**: done

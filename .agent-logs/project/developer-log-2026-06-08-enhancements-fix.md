@@ -1,0 +1,18 @@
+## 2026-06-08 01:32:29 — Session Summary (fix pass)
+- **Plan**: .plans/project/2026-06-08-launch-plan-enhancements.md
+- **Branch**: feature/ui/world-simulator-enhancements
+- **Commit**: 68d0740
+- **Tasks Completed**:
+  - Fix 1 (Critical): Corrected `undo()` in `MapBuilderContext.tsx` — changed guard from `<= 0` to `< 0` and swapped order to read-then-decrement
+  - Fix 2 (Warning): Added `paint-biome` ocean guard in `applyBrush` so biome painting skips ocean tiles
+  - Fix 3 (Warning): Added keyboard shortcuts L/O/B/P for tool switching in `MapBuilderCanvas.tsx`
+  - Fix 4 (Suggestion): Converted inline `import('../types/mapbuilder').MapBuilderTile` to top-level `import type { MapBuilderTile }` in `WorldGenerator.ts`
+- **Files Changed**:
+  - src/ui/mapbuilder/MapBuilderContext.tsx
+  - src/ui/mapbuilder/MapBuilderCanvas.tsx
+  - src/simulation/WorldGenerator.ts
+- **Fixes Applied**:
+  - undo() was using `<= 0` guard (prevented undoing the first history entry at index 0) and decremented before reading (wrong snapshot). Fixed to `< 0` guard and read-before-decrement.
+  - paint-biome was treating ocean tiles the same as land tiles. Added early return guard.
+- **Lessons Learned**: When historyIndexRef starts at -1, the guard `<= 0` skips valid entries at index 0; always use `< 0` for "no history" checks.
+- **Status**: done

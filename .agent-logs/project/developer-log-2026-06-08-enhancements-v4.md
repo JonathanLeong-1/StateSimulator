@@ -1,0 +1,26 @@
+## 2026-06-08 04:05:18 — Session Summary
+- **Plan**: .plans/project/2026-06-08-launch-plan-enhancements-v4.md
+- **Branch**: feature/ui/world-simulator-enhancements-v4
+- **Commit**: 0eb3cdb
+- **Tasks Completed**:
+  - Added `getFlashingTiles()` method to `AnimationController` (returns ReadonlyMap with type+intensity per flashing tile)
+  - Removed `animations` parameter from `getTileColor` in `MapModes.ts` (removed import + flash-blend block; kept `lerpColor`)
+  - Fixed `getTileColor` call site in `HexRenderer.ts` PASS 1 (removed stateColor + animations args; cleaned up unused stateId/stateColor vars)
+  - Removed political-mode gate on PASS 1b — state color overlay now always active on all map modes
+  - Fixed PASS 2 border frontier logic: coastline borders (land↔ocean) now draw as black edges; removed unused tileIsLand/neighborIsLand vars
+  - Added PASS 5: Edge flash (gold for conquest, red for secession) via `animations.getFlashingTiles()`
+  - Added PASS 9: State name labels (centroid-computed, with halo, at camera.scale >= 0.5, min 3 tiles)
+  - Added 5 new `getFlashingTiles` tests to `AnimationController.test.ts`
+  - Rewrote `MapModes.test.ts`: removed AnimationController import, mockAnim helper, all 4-arg getTileColor calls, deleted 6 flash animation tests
+- **Files Changed**:
+  - src/renderer/AnimationController.ts
+  - src/renderer/MapModes.ts
+  - src/renderer/HexRenderer.ts
+  - src/renderer/AnimationController.test.ts
+  - src/renderer/MapModes.test.ts
+- **Fixes Applied**:
+  - Build error: PASS 1 still declared `stateId` and `stateColor` after removing their usage — removed both variables
+- **Lessons Learned**:
+  - After removing a function parameter, trace all computed intermediates at every call site to avoid TS6133 unused-variable errors
+  - When spec says "remove the last arg", also check all local vars that existed solely to produce that arg
+- **Status**: done

@@ -1,0 +1,193 @@
+.panel {
+  width: 280px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface, #1a1d27);
+  border-right: 1px solid var(--color-border, #2e3347);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border, #2e3347) transparent;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: var(--color-text, #e0e2ef);
+}
+
+.section {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-border, #2e3347);
+}
+
+.sectionLabel {
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.nameInput {
+  width: 100%;
+  background: var(--color-bg, #0f1117);
+  border: 1px solid var(--color-border, #2e3347);
+  border-radius: 4px;
+  color: var(--color-text, #e0e2ef);
+  padding: 0.25rem 0.4rem;
+  font-size: 0.85rem;
+  box-sizing: border-box;
+}
+
+.btn {
+  width: 100%;
+  background: var(--color-surface-2, #252836);
+  border: 1px solid var(--color-border, #2e3347);
+  border-radius: 4px;
+  color: var(--color-text, #e0e2ef);
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  margin-bottom: 0.3rem;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.btn:hover {
+  background: var(--color-accent, #4f6ef7);
+  border-color: var(--color-accent, #4f6ef7);
+  color: #fff;
+}
+
+.toolGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+}
+
+.toolBtn {
+  background: var(--color-surface-2, #252836);
+  border: 1px solid var(--color-border, #2e3347);
+  border-radius: 4px;
+  color: var(--color-text, #e0e2ef);
+  padding: 0.3rem 0.25rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+  text-align: center;
+  transition: background 0.12s;
+}
+
+.toolBtn:hover {
+  background: var(--color-surface-3, #2e3347);
+}
+
+.toolBtnActive {
+  background: var(--color-accent, #4f6ef7) !important;
+  border-color: var(--color-accent, #4f6ef7) !important;
+  color: #fff !important;
+}
+
+.biomeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem;
+}
+
+.biomeSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.1s;
+}
+
+.biomeSwatchActive {
+  border-color: #fff !important;
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--color-accent, #4f6ef7);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.row .btn {
+  flex: 1;
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.footer {
+  padding: 0.75rem;
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  background: var(--color-surface, #1a1d27);
+  border-top: 1px solid var(--color-border, #2e3347);
+}
+
+.runBtn {
+  width: 100%;
+  background: #166534;
+  border: 1px solid #15803d;
+  border-radius: 4px;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: background 0.12s;
+}
+
+.runBtn:hover {
+  background: #15803d;
+}
+
+.legendList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+}
+
+.legendSwatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.legendLabel {
+  flex: 1;
+  font-weight: 600;
+  color: var(--color-text, #e0e2ef);
+}
+
+.legendProductivity {
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.72rem;
+}

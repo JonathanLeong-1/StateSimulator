@@ -1,0 +1,132 @@
+# Developer Agent Log — Project
+
+## 2026-06-07 21:36:50 — Session Summary
+- **Plan**: .plans/project/2026-06-07-202651-launch-plan-world-simulator.md
+- **Branch**: feature/engine/world-simulator-core
+- **Commit**: 47239b6
+- **Tasks Completed**:
+  - Implemented `WorldGenerator.generate()` — two-blob landmass, jitter pass, terrain/productivity/obstacle assignment with deterministic 5-rand-per-tile scheme, neighbor precomputation, isCoastal, coastalReachIndices, continent flood-fill, WorldData construction
+  - Implemented `StateManager` — 40-color HSL pool with LRU reuse, allocateState/releaseState, 60-syllable three-tier name generator, renameState, setContinentLandCounts, computeStats (HHI, continent unification scores)
+  - Implemented `SimulationEngine` — constructor, initialize (one state per land tile), 8-step turn (power snapshot → conflict proposals → conflict resolution → secessions → disconnected split → metadata rebuild → stats → turn increment), getState, serialize/deserialize
+  - Wrote `WorldGenerator.test.ts` — 12 tests covering tile count, determinism, different-seed divergence, valid terrain types, ocean productivity/obstacle, land existence, neighbor bounds, coastal correctness, totalLandTiles count, continent assignment
+  - Wrote `StateManager.test.ts` — 9 tests covering allocateState, 40 distinct colors, color LRU reuse, name tier words (sizes 1/10/25), renameState, stateCount, HHI=1 single-state case
+  - Wrote `SimulationEngine.test.ts` — 7 tests covering state-per-land-tile init, no-ocean -1 ownership, consolidation over 100 turns, turn counter, serialize/deserialize round-trip, HHI bounds, totalLandTiles stat
+- **Files Changed**:
+  - `src/simulation/WorldGenerator.ts` (replaced stub)
+  - `src/simulation/StateManager.ts` (replaced stub)
+  - `src/simulation/SimulationEngine.ts` (replaced stub)
+  - `src/simulation/WorldGenerator.test.ts` (new)
+  - `src/simulation/StateManager.test.ts` (new)
+  - `src/simulation/SimulationEngine.test.ts` (new)
+- **Fixes Applied**:
+  - Used `simState!: SimState` (definite assignment assertion) to satisfy strict property initialization — `initialize()` must be called before `getState()`/`step()`
+  - Used `import type` for all simulation/world/ui types to comply with `verbatimModuleSyntax: true`
+  - Inlined `import()` expressions in `SimulationEngine` for `StateData`/`SimStats` types used within method signatures to avoid top-level type import issues with strict verbatimModuleSyntax
+  - Used `new Array<number>(n).fill(0)` instead of `new Array(n).fill(0)` to avoid `any[]` inference
+  - Avoided `nextStateId` private field (spec listed it but it's managed by StateManager; leaving it out prevents `noUnusedLocals` error)
+- **Lessons Learned**:
+  - For deterministic WorldGenerator: always consume fixed number of rand() calls per tile regardless of land/ocean status — 5 calls for terrain/productivity/obstacle phase ensures same seed always produces same output even if land distribution changes
+  - The jitter pass must consume rand() for ALL valid in-bounds neighbors of initial land candidates (not skipping ocean-band neighbors) — skip only the assignment, not the rand() call
+  - In TypeScript strict mode with verbatimModuleSyntax, type-only imports inside method bodies use inline `import()` syntax rather than top-level `import type`
+  - Step 6's full tileIndices rebuild from ownership correctly handles both secession (step 4) and disconnected-split (step 5) edge cases — no special ordering needed
+- **Status**: done
+
+## 2026-06-07 23:59:43 — Session Summary
+- **Plan**: .plans/project/2026-06-07-202651-launch-plan-world-simulator.md
+- **Branch**: fix/ui/state-visibility-improvements
+- **Commit**: 68d0740
+- **Tasks Completed**:
+  - Added `showPoliticalOverlay: boolean` field to `UIState` interface in `src/types/ui.ts`
+  - Exported `TERRAIN_COLORS` and `lerpColor` from `src/renderer/MapModes.ts`
+  - Removed `AnimationController` import from `MapModes.ts`; removed flash logic from `getTileColor`; signature now 3 params (no animations)
+  - Rewrote `src/renderer/HexRenderer.ts` `render` method with 7-pass pipeline: terrain fill → political overlay (semi-transparent) → state borders (or overlay borders) → state labels (centroid-based) → border-flash animations → selected state highlight → hovered tile
+  - Updated `src/renderer/MapModes.test.ts`: removed 4th `animations` arg from all `getTileColor` calls; replaced ocean flash test; rewrote flash animations describe block to reflect that flash is now border-only in HexRenderer
+  - Added Political Overlay checkbox to `src/ui/ControlPanel.tsx`; removed 'political' from map mode buttons
+  - Updated `DEFAULT_UI_STATE` in `src/SimulationContext.tsx`: `mapMode: 'terrain'`, `showPoliticalOverlay: true`
+- **Files Changed**:
+  - `src/types/ui.ts`
+  - `src/renderer/MapModes.ts`
+  - `src/renderer/MapModes.test.ts`
+  - `src/renderer/HexRenderer.ts`
+  - `src/ui/ControlPanel.tsx`
+  - `src/SimulationContext.tsx`
+- **Fixes Applied**:
+  - Avoided importing unused `TERRAIN_COLORS`/`lerpColor` in HexRenderer (render method doesn't call them directly) to prevent `noUnusedLocals` TS errors
+  - Used `effectiveMode as any` cast in render pass 1 to satisfy MapMode type when passing 'terrain' as override string
+- **Lessons Learned**:
+  - When removing a parameter from a function, ALL test call sites must be updated — grep for all usages including in test helpers
+  - The `mockAnim` helper can stay in tests even if unused — `noUnusedLocals` doesn't apply to test files by default in vitest
+- **Status**: done
+- **Plan**: .plans/project/2026-06-07-202651-launch-plan-world-simulator.md
+- **Branch**: feature/ui/world-simulator-renderer
+- **Commit**: bd92e20
+- **Tasks Completed**:
+  - Replaced AnimationController stub with full implementation (Map-based animation tracking with conquest/secession flash)
+  - Replaced MapModes stub with full implementation (terrain/political/productivity/obstacle color modes with animation overlay)
+  - Replaced HexRenderer stub with full implementation (flat-top hex rendering, borders, selected/hovered highlights, pixel-to-tile hit testing)
+  - Created SimulationContext.tsx — adapted to actual API: step() returns void (ownership diff used for animations), constructor (world, settings) not (world, stateManager, settings), settings mutated by reference for live updates, renameState mutates StateData directly
+  - Created src/ui/MapCanvas.tsx — RAF render loop with canvas interaction (hover, click, resize)
+  - Created src/ui/ControlPanel.tsx — full sim controls (play/pause/step/reset/randomize, sliders, toggles, save/load)
+  - Created src/ui/StatsPanel.tsx — real-time stats display with HHI color coding
+  - Created src/ui/Charts.tsx — SVG line charts for state count, largest %, HHI
+  - Created src/ui/Tooltip.tsx — fixed-position tile info on hover
+  - Created src/ui/InfoPanel.tsx — selected state detail with inline rename
+  - Created src/ui/EducationPanel.tsx — rotating tips bar with fade transition
+  - Created src/ui/Legend.tsx — map-mode-aware legend
+  - Updated src/App.tsx — full layout with SimulationProvider wrapper
+  - Updated all CSS module files (App, ControlPanel, StatsPanel, Charts, InfoPanel, InfoPanel, EducationPanel, Legend, MapCanvas)
+  - Updated README.md with complete project documentation
+- **Files Changed**:
+  - src/renderer/AnimationController.ts (replaced stub)
+  - src/renderer/MapModes.ts (replaced stub)
+  - src/renderer/HexRenderer.ts (replaced stub)
+  - src/SimulationContext.tsx (new)
+  - src/ui/MapCanvas.tsx (new)
+  - src/ui/MapCanvas.module.css (new)
+  - src/ui/ControlPanel.tsx (new)
+  - src/styles/ControlPanel.module.css (filled)
+  - src/ui/StatsPanel.tsx (new)
+  - src/styles/StatsPanel.module.css (filled)
+  - src/ui/Charts.tsx (new)
+  - src/styles/Charts.module.css (filled)
+  - src/ui/Tooltip.tsx (new)
+  - src/ui/InfoPanel.tsx (new)
+  - src/ui/InfoPanel.module.css (new)
+  - src/ui/EducationPanel.tsx (new)
+  - src/ui/EducationPanel.module.css (new)
+  - src/ui/Legend.tsx (new)
+  - src/ui/Legend.module.css (new)
+  - src/App.tsx (replaced stub)
+  - src/styles/App.module.css (filled)
+  - README.md (replaced)
+- **Fixes Applied**:
+  - Removed explicit `import React from 'react'` from all JSX files (project uses react-jsx transform with noUnusedLocals strict mode)
+  - Adapted SimulationContext to actual SimulationEngine API (step() returns void, constructor takes (world, settings) only)
+  - Used React named type imports (Dispatch, SetStateAction, ReactNode) instead of React namespace
+- **Lessons Learned**:
+  - Always check SimulationEngine API before implementing context layer — step() returned void not {conflicts,secessions}
+  - This project uses react-jsx transform so React default import is unused and flagged as error
+  - Settings live-update: mutate the settings object reference passed to engine constructor rather than calling updateSettings()
+- **Status**: done
+
+## 2026-06-07 23:23:19 — Session Summary (Fix Pass)
+- **Plan**: .plans/project/2026-06-07-202651-launch-plan-world-simulator.md
+- **Branch**: feature/ui/world-simulator-renderer
+- **Commit**: bd92e20
+- **Tasks Completed**:
+  - Fix 1 (CRITICAL): Added Export Map screenshot feature — `canvasElementRef` + `setCanvasElement` + `exportScreenshot` in SimulationContext; `setCanvasElement` called in MapCanvas useEffect; 📷 Export button in ControlPanel save/load section
+  - Fix 2: Corrected secession animation — `doStep` now checks `newOwnerState.size === 1` (brand-new state) to call `markSecession` instead of `markConquest`
+  - Fix 3: Fixed `resetSim` React anti-pattern — added `seedRef` to track seed outside state; `resetSim` now reads from `seedRef.current` and uses sequential setState calls instead of calling setState inside a setState updater; `changeSeed` now also updates `seedRef.current`
+  - Fix 4: Added `aria-label` to icon-only buttons in InfoPanel (`Rename state`/`Confirm rename` and `Deselect state`)
+  - Fix 5: Added `role="img"` and `aria-label="World Simulator map"` to canvas element in MapCanvas
+- **Files Changed**:
+  - `src/SimulationContext.tsx`
+  - `src/ui/MapCanvas.tsx`
+  - `src/ui/ControlPanel.tsx`
+  - `src/ui/InfoPanel.tsx`
+- **Fixes Applied**:
+  - All 5 code-review blockers addressed without introducing new TypeScript errors
+- **Lessons Learned**:
+  - Never call `setX` inside a `setY` functional updater — React will batch/defer these incorrectly; use a ref to track the value instead
+  - When detecting secession vs conquest from ownership diff: check `newOwnerState.size === 1` (state just created with exactly one tile is a secession, not a conquest)
+- **Status**: done

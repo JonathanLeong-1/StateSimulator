@@ -1,0 +1,547 @@
+/* Agent Monitor Dashboard v2 — Dark Theme */
+
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-card: #1e2a47;
+  --bg-hover: #253456;
+  --text-primary: #e0e0e0;
+  --text-secondary: #9d9d9d;
+  --text-bright: #f0f0f0;
+  --border-color: #2a3a5c;
+  --accent-blue: #4fc1ff;
+  --status-active: #4ec9b0;
+  --status-completed: #608b4e;
+  --status-error: #f44747;
+  --status-idle: #6a6a6a;
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  --radius: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ─────────────────────────────── */
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.session-duration {
+  font-size: 14px;
+  color: var(--accent-blue);
+  font-variant-numeric: tabular-nums;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.plan-link {
+  color: var(--accent-blue);
+  text-decoration: none;
+  font-size: 12px;
+  padding: 2px 8px;
+  border: 1px solid var(--accent-blue);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.plan-link:hover {
+  background: rgba(79, 193, 255, 0.15);
+}
+
+.session-status {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.connected { color: var(--status-active); }
+.status-badge.disconnected { color: var(--status-error); }
+
+/* ── Main Content ───────────────────────── */
+
+main {
+  flex: 1;
+  padding: 16px 24px;
+  overflow: auto;
+}
+
+.main-content {
+  display: flex;
+  gap: 16px;
+  height: 100%;
+}
+
+.graph-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.graph-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-height: 300px;
+  overflow: auto;
+}
+
+/* ── SVG Graph ──────────────────────────── */
+
+.spawn-graph {
+  display: block;
+  margin: 0 auto;
+}
+
+.graph-node {
+  transition: opacity 0.2s;
+}
+
+.graph-node:hover {
+  opacity: 0.85;
+}
+
+.graph-node:hover rect {
+  filter: brightness(1.2);
+}
+
+.graph-node-rect {
+  transition: stroke 0.3s, filter 0.3s;
+}
+
+.graph-node-active .status-dot {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.graph-node-active rect {
+  animation: node-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes node-glow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(78, 201, 176, 0.3)); }
+  50% { filter: drop-shadow(0 0 8px rgba(78, 201, 176, 0.6)); }
+}
+
+.graph-edge {
+  transition: stroke 0.3s;
+}
+
+/* ── Detail Panel ───────────────────────── */
+
+.detail-panel {
+  width: 0;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  transition: width 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  padding: 0;
+}
+
+.detail-panel.visible {
+  width: 360px;
+  min-width: 360px;
+  padding: 16px;
+  opacity: 1;
+  overflow-y: auto;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-icon { font-size: 20px; }
+
+.detail-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-bright);
+  flex: 1;
+}
+
+.detail-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.detail-status.status-active { background: rgba(78, 201, 176, 0.2); color: var(--status-active); }
+.detail-status.status-completed { background: rgba(96, 139, 78, 0.2); color: var(--status-completed); }
+.detail-status.status-error { background: rgba(244, 71, 71, 0.2); color: var(--status-error); }
+.detail-status.status-idle { background: rgba(106, 106, 106, 0.2); color: var(--status-idle); }
+
+.detail-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.detail-close:hover { color: var(--text-bright); }
+
+.detail-info {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.detail-info div {
+  padding: 3px 0;
+  color: var(--text-secondary);
+}
+
+.detail-info strong {
+  color: var(--text-primary);
+}
+
+.detail-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.detail-section h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.detail-section p {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* ── Progress bar ───────────────────────── */
+
+.progress-bar {
+  height: 6px;
+  background: var(--bg-primary);
+  border-radius: 3px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--status-active);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* ── Todo list ──────────────────────────── */
+
+.todo-list {
+  list-style: none;
+  font-size: 12px;
+}
+
+.todo-list li {
+  padding: 4px 0;
+  color: var(--text-secondary);
+}
+
+.todo-list li.todo-completed { color: var(--status-completed); }
+.todo-list li.todo-in-progress { color: var(--status-active); }
+
+/* ── Mini timeline ──────────────────────── */
+
+.mini-timeline {
+  list-style: none;
+  font-size: 12px;
+}
+
+.mini-timeline li {
+  padding: 3px 0;
+  color: var(--text-secondary);
+}
+
+.evt-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  margin-right: 4px;
+}
+
+/* ── Events Bar ─────────────────────────── */
+
+.events-bar {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  max-height: 40px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.events-bar.expanded {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.events-toggle {
+  display: block;
+  width: 100%;
+  padding: 10px 24px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.events-toggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.events-list {
+  padding: 0 24px 12px;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(42, 58, 92, 0.5);
+}
+
+.evt-icon { font-size: 14px; }
+.evt-agent { color: var(--accent-blue); font-weight: 500; min-width: 100px; }
+.evt-type { color: var(--text-primary); }
+.evt-detail { color: var(--text-secondary); font-style: italic; }
+
+/* ── Plan Modal ─────────────────────────── */
+
+.plan-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.plan-modal.visible {
+  display: flex;
+}
+
+.plan-modal-inner {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  width: 80%;
+  max-width: 900px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow);
+}
+
+.plan-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.plan-modal-header h3 {
+  font-size: 14px;
+  color: var(--text-bright);
+}
+
+.plan-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.plan-modal-close:hover { color: var(--text-bright); }
+
+.plan-content {
+  padding: 16px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+/* ── Empty state ────────────────────────── */
+
+.empty-state {
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+  padding: 40px 16px;
+}
+
+/* ── Responsive (1200px+) ───────────────── */
+
+@media (max-width: 1200px) {
+  .detail-panel.visible {
+    width: 300px;
+    min-width: 300px;
+  }
+}
+
+/* ── Workstream Filters ─────────────────── */
+
+.workstream-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 24px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.workstream-filters:empty {
+  display: none;
+}
+
+.workstream-filters-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+
+.workstream-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.workstream-filter-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.workstream-filter-btn.active {
+  color: var(--text-bright);
+  border-color: currentColor;
+}
+
+.workstream-filter-btn .ws-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ── Workstream Badges ──────────────────── */
+
+.workstream-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ── Workstream Colors ──────────────────── */
+
+.workstream-backend { background: rgba(74, 158, 255, 0.2); color: #4a9eff; }
+.workstream-frontend { background: rgba(74, 255, 138, 0.2); color: #4aff8a; }
+.workstream-infra { background: rgba(255, 170, 74, 0.2); color: #ffaa4a; }
+.workstream-default { background: rgba(170, 170, 170, 0.2); color: #aaaaaa; }
+
+/* ── Fallback Badges ────────────────────── */
+
+.fallback-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 6px;
+}
+
+.fallback-badge.tier-1 {
+  background: #f59e0b;
+  color: #000;
+}
+
+.fallback-badge.tier-2 {
+  background: #ea580c;
+  color: #fff;
+}

@@ -1,0 +1,13 @@
+## 2026-06-08 02:29:32 — Session Summary
+- **Plan**: `.plans/project/2026-06-08-launch-plan-enhancements-v2.md`
+- **Branch**: `feature/ui/world-simulator-enhancements`
+- **Commit**: `c91a770`
+- **Tasks Completed**:
+  - Updated Features list: replaced "Bold state borders" + old "Voyage arc animations" bullet with accurate v2 descriptions (state-colored arcs, Political map mode, Pan & Zoom navigation)
+  - Updated Map Modes table: Political mode now correctly describes terrain-visible tint, state-colored bold borders, subtle hex mesh grid
+  - Added new "Pan & Zoom" section under Map Builder with a navigation reference table
+  - Updated Biome Selector description: corrected biome list to 7 types (Plains, River Valley, Forest, Hills, Desert, Tundra, Mountains) and documented the always-visible biome reference legend
+  - Updated Brush Controls table: brush size range now 0–8 with single-hex mode note
+- **Files Changed**: `README.md`
+- **Lessons Learned**: Verify biome counts and names against actual source code (`LAND_BIOMES` in MapBuilderPanel.tsx) rather than relying solely on the delegation payload description — the payload said "8 terrain types" but code has 7. Also confirmed "Hills" not "Highlands" (v1 README had this wrong too).
+- **Status**: done

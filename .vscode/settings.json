@@ -1,0 +1,27 @@
+{
+  // ── GitHub Copilot Instructions Enforcement ────────────────────────────────
+  // Ensures .github/copilot-instructions.md is loaded into EVERY Copilot
+  // session (chat, inline, agent mode) — not just when @architect is invoked.
+  //
+  // The copilot-instructions.md file contains the Architect-First Protocol,
+  // Strict Delegation Protocol, and branching/testing/review requirements.
+  // Without this setting, the instructions only apply in agent mode when
+  // the file is auto-discovered by convention.
+
+  "github.copilot.chat.codeGeneration.instructions": [
+    {
+      "file": ".github/copilot-instructions.md"
+    }
+  ],
+
+  // Also apply instructions to test generation so tester agents follow protocol
+  "github.copilot.chat.testGeneration.instructions": [
+    {
+      "file": ".github/copilot-instructions.md"
+    },
+    {
+      "file": ".github/instructions/testing.instructions.md"
+    }
+  ],
+  "liveServer.settings.port": 5502
+}

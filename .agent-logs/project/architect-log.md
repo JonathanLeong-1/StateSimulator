@@ -1,0 +1,47 @@
+
+## 2026-06-07 20:26:51 — Session Summary
+- **Project**: World Simulator — Browser-based political geography simulator
+- **Architecture Plan**: .plans/project/2026-06-07-202651-architecture-world-simulator.md
+- **Architecture Style**: Single-page application (SPA) — React 18 + Vite 5 + TypeScript, HTML5 Canvas rendering; modular internally (engine / renderer / UI layers)
+- **Execution Mode**: sequential (3 serial waves; Codespaces detected but serial dependency graph makes parallelism pointless)
+- **Launch Plan**: .plans/project/2026-06-07-202651-launch-plan-world-simulator.md
+- **Feature Fingerprint**: browser-political-geography-simulator
+- **Workstreams Identified**:
+  - infra → @infra-lead (Wave 1: Vite scaffold, types, rng, hexUtils, CSS, stubs)
+  - engine → @backend-lead (Wave 2: WorldGenerator, SimulationEngine, StateManager + tests)
+  - ui → @frontend-lead (Wave 3: HexRenderer, AnimationController, all React components, Charts, README)
+- **Decisions Made**:
+  - React 18 + Vite 5 + TypeScript strict mode
+  - HTML5 Canvas for hex map (not SVG — performance at 3150 tiles)
+  - Flat-top hexagons with axial (q,r) storage, flat tile array indexed r*width+q
+  - mulberry32 seeded RNG for deterministic world generation
+  - Two landmass blobs with guaranteed ocean separation in middle 20% of grid
+  - Exact simulation formulas specified in architecture (stalemate, conflict, secession)
+  - 40-color HSL palette with LRU reuse for state colors
+  - Pure CSS custom properties + CSS modules, no external CSS framework
+  - Pure SVG line charts (no chart library)
+  - Int32Array for ownership (typed array performance)
+  - runSubagent not available — Tier 1 (human-relay) delegation mode
+- **Open Questions**: None — comprehensive spec provided
+- **Delegation Mode**: manual (Tier 1 — human pastes payloads to leads)
+- **Status**: launch-planned — delegation payloads ready for human
+
+## 2026-06-08 14:06:24 — Session Summary
+- **Project**: World Simulator — Map Dimension 4× Expansion + Step ×100 Button
+- **Architecture Plan**: .plans/project/2026-06-08-architecture-map-dimension-step100.md
+- **Architecture Style**: Single-workstream additive patch on existing React 18 + Vite 5 SPA
+- **Execution Mode**: sequential
+- **Launch Plan**: .plans/project/2026-06-08-launch-plan-map-dimension-step100.md
+- **Feature Fingerprint**: map-dimension-step100
+- **Workstreams Identified**:
+  - frontend → @frontend-lead (Wave 1: dimensions + stepN + button + test updates)
+- **Decisions Made**:
+  - Feature A: Change world dimensions from 80×50 → 160×100 in SimulationContext.tsx and MapBuilderContext.tsx only
+  - Feature B: Add stepN(n) action: pause if playing, loop engine.step() n times, flush state once; expose from context
+  - Button label: ⏭+100; positioned after existing "⏭ Step" button; same disabled condition (isPlaying)
+  - Synchronous execution of 100 steps (no web worker needed at 16k tiles)
+  - Single setSimState call after the loop (not inside) to avoid 100 re-renders
+  - All 6 changed files documented in file-by-file change plan
+- **Open Questions**: None
+- **Delegation Mode**: manual (Tier 1 — human pastes payloads to frontend-lead)
+- **Status**: launch-planned — delegation payloads ready for human

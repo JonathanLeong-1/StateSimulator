@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "node -e \"const input=require('fs').readFileSync('/dev/stdin','utf8'); const data=JSON.parse(input); const cmd=(data.toolInput?.command||data.toolInput?.input||'').toLowerCase(); const blocked=['--force','rm -rf /','drop database','drop table']; const match=blocked.find(b=>cmd.includes(b)); if(match){const out={decision:'block',reason:'Blocked dangerous command: '+match};process.stdout.write(JSON.stringify(out));process.exit(2);}\"",
+        "windows": "powershell -NoProfile -Command \"$input = [Console]::In.ReadToEnd(); $data = $input | ConvertFrom-Json; $cmd = ($data.toolInput.command, $data.toolInput.input -ne $null)[0]; if(-not $cmd){exit 0}; $cmd = $cmd.ToLower(); $blocked = @('--force','rm -rf','drop database','drop table'); foreach($b in $blocked){if($cmd.Contains($b)){Write-Output ('{\"decision\":\"block\",\"reason\":\"Blocked dangerous command: ' + $b + '\"}'); exit 2}}\"",
+        "timeout": 10
+      }
+    ]
+  }
+}

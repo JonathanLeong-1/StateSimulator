@@ -1,0 +1,44 @@
+# Developer Log — v2 Enhancements
+
+## 2026-06-08 02:19:54 UTC — Session Summary
+- **Plan**: `.plans/project/2026-06-08-launch-plan-enhancements-v2.md`
+- **Branch**: `feature/ui/world-simulator-enhancements`
+- **Commit**: `c91a770`
+- **Tasks Completed**:
+  - Task 1: `src/types/mapbuilder.ts` — updated brushSize comment to `0–8`
+  - Task 2: `src/renderer/MapModes.ts` — removed political blend, now returns terrain color directly; removed unused `blendColors` function; prefixed unused `stateColor` param with `_`
+  - Task 3: `src/renderer/AnimationController.ts` — added `stateColor: string` to `SeaVoyageAnimation`, `markSeaVoyage`, and `getActiveSeaVoyages`
+  - Task 4: `src/simulation/SimulationEngine.ts` — added `attackerStateId` to `lastSeaCrossings` array and `getLastSeaCrossings()` return type
+  - Task 5: `src/renderer/HexRenderer.ts` — full rewrite: replaced `offsetX/offsetY` with `camera={x,y,scale}`, added `fitToView`, updated `tileCenter` to return world coords, wrapped `render()` in camera transform, added PASS 1b (political overlay with `hexToRgb`), added 3-tier border system (Tier 0 = same-state grid, Tier 1 = cross-state shadow+highlight, Tier 2 = coastlines), updated `getTileAtPixel` with inverse camera transform, updated PASS 8 arc color to use `voyage.stateColor`, added `panBy`, `zoomAt`, `resetView` public methods
+  - Task 6: `src/SimulationContext.tsx` — updated `markSeaVoyage` call to look up `stateColor` from `states.get(crossing.attackerStateId)`
+  - Task 7: `src/ui/MapCanvas.tsx` + `MapCanvas.module.css` — added `isPanning` ref, `isNavigating` state, non-passive wheel zoom effect, middle/right-button pan on mousedown/mousemove/mouseup/mouseleave, `onContextMenu` prevention, `.navigating` CSS class
+  - Task 8: `src/ui/mapbuilder/MapBuilderRenderer.ts` — full rewrite: added `camera` field, replaced `computeLayout` with `computeTileSize`+`fitToView`, updated `tileCenter` to return world coords, decoupled layout from render (render only calls `setTiles` on first render or size change, not every frame), wrapped render passes in camera transform, updated `getTileAtPixel` with inverse camera transform, added `panBy`, `zoomAt`, `resetView`
+  - Task 9: `src/ui/mapbuilder/MapBuilderContext.tsx` — updated `setBrushSize` clamp to `Math.max(0, ...)` to allow brushSize=0
+  - Task 10: `src/ui/mapbuilder/MapBuilderPanel.tsx` + `MapBuilderPanel.module.css` — slider min changed to 0, label shows "BRUSH: SINGLE HEX" at 0, added `BIOME_LEGEND` constant and biome reference section, added legend CSS classes
+  - Task 11: `src/ui/mapbuilder/MapBuilderCanvas.tsx` + `MapBuilderCanvas.module.css` — added `isPanningRef`/`isNavigating` state, non-passive wheel zoom, R key for reset view, keyboard `[` key min changed to 0, pan on middle/right button, `onContextMenu` prevention, initial `setTiles()` call in init effect, `.navigating` CSS class
+  - Task 12: `src/App.tsx` — verified; no changes needed
+  - Tests updated: `AnimationController.test.ts` (4th arg stateColor on all `markSeaVoyage` calls, `stateColor` assertions in voyage tests), `MapModes.test.ts` (political mode now expects terrain color, not blended)
+- **Files Changed**:
+  - `src/types/mapbuilder.ts`
+  - `src/renderer/MapModes.ts`
+  - `src/renderer/AnimationController.ts`
+  - `src/simulation/SimulationEngine.ts`
+  - `src/renderer/HexRenderer.ts`
+  - `src/SimulationContext.tsx`
+  - `src/ui/MapCanvas.tsx`
+  - `src/ui/MapCanvas.module.css`
+  - `src/ui/mapbuilder/MapBuilderRenderer.ts`
+  - `src/ui/mapbuilder/MapBuilderContext.tsx`
+  - `src/ui/mapbuilder/MapBuilderPanel.tsx`
+  - `src/ui/mapbuilder/MapBuilderPanel.module.css`
+  - `src/ui/mapbuilder/MapBuilderCanvas.tsx`
+  - `src/ui/mapbuilder/MapBuilderCanvas.module.css`
+  - `src/renderer/AnimationController.test.ts`
+  - `src/renderer/MapModes.test.ts`
+- **Fixes Applied**:
+  - `MapModes.ts` had unused `blendColors` function and `stateColor` param after political mode change — fixed by removing `blendColors` and prefixing param with `_`
+  - `MapBuilderRenderer.ts` camera reset on every paint: fixed by tracking `layoutInitialized` flag and only rebuilding tile centers/calling fitToView when tile count changes, not every frame
+- **Lessons Learned**:
+  - When removing a blend function from a mode switch, always check if the helper function becomes entirely unused — TypeScript strict mode will catch it
+  - Decoupling tile layout computation (tileCenters, fitToView) from the per-frame render() call is essential for pan/zoom to work correctly in the MapBuilder
+- **Status**: done

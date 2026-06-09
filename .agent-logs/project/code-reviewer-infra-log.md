@@ -1,0 +1,37 @@
+## 2026-06-07 21:06:59 — Session Summary
+- **Plan**: `.plans/project/2026-06-07-202651-launch-plan-world-simulator.md`
+- **Branch Reviewed**: `feature/infra/world-simulator-scaffold`
+- **Commit**: `d617109`
+- **Verdict**: REQUEST CHANGES
+- **Critical Issues Found**: 0 correctness/security blockers; 2 process/cleanup warnings
+- **Patterns Flagged**:
+  - All Wave 1 implementation files are untracked (not committed to branch) — must commit before merge
+  - `index.html` title left as "vite-temp" from scaffold run — should be "World Simulator"
+  - Leftover Vite default files not removed: `src/App.css`, `src/index.css`, `src/assets/hero.png`, `react.svg`, `vite.svg`
+  - `src/simulation/StateManager.ts` uses inline import syntax for SimState/SimStats — should use top-level imports
+- **Lessons Learned**:
+  - Check `git status` first — implementation may be in working tree but not committed
+  - Always verify `index.html` title was updated from scaffold default
+  - When `npm create vite@latest` is run, it leaves behind default CSS/asset files that must be cleaned up manually
+  - Type contracts matched architecture spec exactly; mulberry32, hexUtils algorithms correct; all 23 tests pass; tsc --noEmit clean
+
+## 2026-06-07 21:10:54 — Session Summary (Re-Review)
+- **Plan**: `.plans/project/2026-06-07-202651-launch-plan-world-simulator.md`
+- **Branch Reviewed**: `feature/infra/world-simulator-scaffold`
+- **Commit**: `d617109`
+- **Verdict**: APPROVE
+- **Critical Issues Found**: 0 — all previous REQUEST CHANGES issues resolved
+- **Patterns Flagged**:
+  - All prior issues confirmed fixed:
+    - `index.html` title is now "World Simulator" ✅
+    - `StateManager.ts` uses top-level `import type { StateData, SimState, SimStats }` ✅
+    - `src/App.css`, `src/index.css` removed ✅
+    - `src/assets/react.svg`, `src/assets/vite.svg` removed ✅
+    - No stale import references to deleted files in any src/ file ✅
+  - 23/23 tests pass (rng.test.ts: 4, hexUtils.test.ts: 19)
+  - `npx tsc --noEmit` produces zero errors ✅
+  - `src/assets/` retains only `hero.png` (appropriate placeholder)
+  - Files still uncommitted to branch — expected at this stage per Gate 7 protocol
+- **Lessons Learned**:
+  - Re-reviews should verify no ghost references remain after file deletion (grep for imports of deleted files)
+  - "Not implemented — Wave 2" stubs are intentional architecture pattern; not a blocker

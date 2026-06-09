@@ -1,0 +1,39 @@
+# Template Inheritance — Merge Strategies
+#
+# These rules protect project-specific paths when merging updates from the
+# upstream template repo. The "merge=ours" driver tells Git to always keep
+# the LOCAL (project) version of these files/directories during a merge,
+# preventing upstream template changes from overwriting project data.
+#
+# The "ours" merge driver must be configured in each child repo:
+#   git config merge.ours.driver true
+#
+# The sync scripts (scripts/sync-template.sh, scripts/sync-template.ps1)
+# handle this automatically.
+
+# ── Project-specific paths (never overwritten by template updates) ──────────
+.plans/project/**        merge=ours
+.agent-logs/project/**   merge=ours
+.agent-events/**         merge=ours
+.test-specs/project/**   merge=ours
+README.md                merge=ours
+
+# ── Template context isolation ──────────────────────────────────────────────
+# Template plans and logs should NOT exist in project repos. They serve only
+# the template repo itself. The merge=ours rules below prevent existing files
+# from being updated during sync, and the sync scripts (step 6) remove any
+# NEW template files that slip through the merge.
+.plans/template/**       merge=ours
+.agent-logs/template/**  merge=ours
+
+# ── Binary files (standard) ─────────────────────────────────────────────────
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary

@@ -1,0 +1,20 @@
+.canvasWrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: var(--color-bg);
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: default;
+}
+
+.navigating {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grabbing;
+}

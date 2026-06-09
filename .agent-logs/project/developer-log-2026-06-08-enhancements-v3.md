@@ -1,0 +1,66 @@
+# Developer Log — v3 Enhancements
+
+## 2026-06-08 03:11:08 UTC — Session Summary
+- **Plan**: `.plans/project/2026-06-08-launch-plan-enhancements-v3.md`
+- **Branch**: `feature/ui/world-simulator-enhancements`
+- **Commit**: `a9812da`
+- **Tasks Completed**:
+  - Step 1: `src/simulation/hexUtils.ts` — replaced `getAxialNeighbors` with `getOffsetNeighbors` (even-q offset formula), updated `hexDistance` to use cube-coordinate conversion from even-q offset, updated internal call in `bfsReachableCoastal`
+  - Step 2: `src/simulation/WorldGenerator.ts` — updated import and all 3 call sites (`getAxialNeighbors` → `getOffsetNeighbors`): jitter pass, neighbor precompute in generate(), and fromCustomMap
+  - Step 3: `src/simulation/SimulationEngine.ts` — no changes needed; `lastSeaCrossings` with `attackerStateId` and `getLastSeaCrossings()` already correct from v2
+  - Step 4: `src/renderer/AnimationController.ts` — converted `seaVoyages` from array to `Map<string, SeaVoyageAnimation>` for O(1) key-based dedup; updated `tick()`, `markSeaVoyage()`, `getActiveSeaVoyages()`
+  - Step 5a: `src/renderer/HexRenderer.ts` — updated `tileCenter` to even-q offset formula
+  - Step 5b: `src/renderer/HexRenderer.ts` — added PASS 1c (hovered state overlay) after PASS 1b
+  - Step 5c: `src/renderer/HexRenderer.ts` — replaced v2 3-tier border system (Tier 0/1/2) with v3 flat two-category system (grey edges 0.5px/20% vs black edges 1.5px/88%)
+  - Step 5d: `src/renderer/HexRenderer.ts` — replaced PASS 7 hovered tile dashed outline with small white dot (arc radius 2.5px)
+  - Step 5e: `src/renderer/HexRenderer.ts` — PASS 8 sea voyage arcs already used `stateColor` from v2 ✓
+  - Step 6: `src/SimulationContext.tsx` — no changes needed; `loadCustomWorld` and `markSeaVoyage` with stateColor already correct from v2
+  - Step 7: `src/ui/MapCanvas.tsx` — added `dragStartPos`, `hasDragged` refs and `DRAG_THRESHOLD=5` const; updated `handleMouseMove` with left-drag detection; updated `onMouseDown` for button 0 drag-start; added `onMouseUp` with click disambiguation; removed `handleClick` callback; updated `handleMouseLeave` to reset drag state
+  - Step 7b: `src/ui/MapCanvas.module.css` — updated `.canvas` cursor from `crosshair` to `default`
+  - Step 8: `src/types/mapbuilder.ts` — already had `brushSize: 0–8` comment ✓ — no changes needed
+  - Step 9: WorldGenerator.fromCustomMap — already existed from v2; updated via Step 2 (getOffsetNeighbors)
+  - Step 10: `src/ui/mapbuilder/MapBuilderRenderer.ts` — updated `tileCenter` to even-q offset formula; updated `setTiles()` neighbor lookup from `AXIAL_DIRS` to `DIRS_EVEN`/`DIRS_ODD` per-parity
+  - Step 11: `src/ui/mapbuilder/MapBuilderContext.tsx` — `setBrushSize` clamp already `Math.max(0, ...)` ✓ — no changes needed
+  - Step 12: `src/ui/mapbuilder/MapBuilderPanel.tsx` — updated brushSize=1 label from `BRUSH SIZE: 1` to `BRUSH: 1 (RING)`
+  - Step 13: `src/ui/mapbuilder/MapBuilderCanvas.tsx` — `[` key min already 0, R key already present ✓ — no changes needed
+  - Step 14: `src/App.tsx` — appMode toggle and MapBuilderProvider already correct ✓ — no changes needed
+  - Tests: `src/simulation/hexUtils.test.ts` — updated import to `getOffsetNeighbors`, replaced `getAxialNeighbors` describe block with `getOffsetNeighbors` tests (including odd-q case), removed failing `hexDistance(0,0,-1,1)===1` test (now returns 2 in even-q), added 3 new hexDistance tests per spec
+  - Tests: `src/renderer/AnimationController.test.ts` — markSeaVoyage tests with stateColor already present from v2 ✓ — no changes needed
+  - Tests: `src/renderer/MapModes.test.ts` — political mode returns terrain color already from v2 ✓ — no changes needed
+- **Files Changed**:
+  - `src/simulation/hexUtils.ts`
+  - `src/simulation/WorldGenerator.ts`
+  - `src/renderer/AnimationController.ts`
+  - `src/renderer/HexRenderer.ts`
+  - `src/ui/MapCanvas.tsx`
+  - `src/ui/MapCanvas.module.css`
+  - `src/ui/mapbuilder/MapBuilderRenderer.ts`
+  - `src/ui/mapbuilder/MapBuilderPanel.tsx`
+  - `src/simulation/hexUtils.test.ts`
+- **Fixes Applied**:
+  - Removed `hexDistance(0,0,-1,1)===1` test — in even-q offset, (-1,1) is 2 hops from (0,0), not 1 (it's an axial neighbor, not an even-q offset neighbor)
+  - `bfsReachableCoastal` had an internal call to `getAxialNeighbors`; updated to `getOffsetNeighbors` without changing the function's structure
+  - AnimationController Map-based tick had to mutate-while-iterating safely — used `v.remaining -= deltaMs` mutation on value reference (valid for Map values since they're objects)
+- **Lessons Learned**:
+  - Even-q offset neighbors differ between even-column and odd-column tiles; always check both parity cases in tests
+  - When renaming an exported function, search all files that call it internally (not just callers via import) — `bfsReachableCoastal` called `getAxialNeighbors` directly within hexUtils.ts
+  - Map-based animation storage is cleaner than array with findIndex for dedup — O(1) key lookup vs O(n) scan
+- **Status**: done
+
+## 2026-06-08 03:22:32 UTC — Session Summary (v3 brush fix)
+- **Plan**: `.plans/project/2026-06-08-launch-plan-enhancements-v3.md`
+- **Branch**: `feature/ui/world-simulator-enhancements`
+- **Commit**: `a9812da`
+- **Tasks Completed**:
+  - Fixed `MapBuilderContext.tsx` brush BFS even-q regression flagged by `@code-reviewer`
+  - Replaced axial `hexDist` (using `dq+dr` formula) with cube-coordinate even-q version (converts via `z = r - (q - (q & 1)) / 2`, then Chebyshev on cube coords)
+  - Replaced single `DIRS` array (axial) with parity-dependent `DIRS_EVEN` / `DIRS_ODD` (matching `MapBuilderRenderer.ts` and `hexUtils.getOffsetNeighbors`)
+  - In BFS expansion, replaced static `for (const [dq, dr] of DIRS)` with `const dirs = ct.q % 2 === 0 ? DIRS_EVEN : DIRS_ODD` parity selection
+- **Files Changed**:
+  - `src/ui/mapbuilder/MapBuilderContext.tsx`
+- **Fixes Applied**:
+  - Axial `hexDist` was returning wrong distances for even-q offset grids — tiles that are neighbors in even-q layout were being measured as distance 2 by the axial formula, causing the brush to skip tiles on odd columns
+  - Axial `DIRS` was expanding to wrong neighbors on odd columns — the 6 axial directions don't match even-q offset neighbors when q is odd
+- **Lessons Learned**:
+  - `MapBuilderContext` had its own local `hexDist` and `DIRS` that were never updated when the rest of the codebase moved to even-q — always grep for all copies of hex math when migrating
+- **Status**: done

@@ -1,0 +1,14 @@
+## 2026-06-08 01:35:34 — Session Summary
+- **Plan**: .plans/project/2026-06-08-launch-plan-enhancements.md
+- **Branch**: feature/ui/world-simulator-enhancements
+- **Commit**: 68d0740
+- **Tasks Completed**:
+  - Added Bold State Borders feature to README Features section
+  - Added Voyage Arc Animations feature to README Features section
+  - Added Map Builder entry to README Features section
+  - Added full "Map Builder" section to README with paint tools table, biome selector description, brush controls table, map actions table, and step-by-step workflow
+- **Files Changed**: README.md
+- **Lessons Learned**:
+  - Always add blank lines between top-level sections when inserting new content after a table; Markdown parsers handle it gracefully but editors may merge paragraphs without the blank line
+  - Read the entire README before editing to understand which sections already exist and where to insert new content cleanly
+- **Status**: done

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Monitor Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <h1>🤖 Agent Monitor Dashboard</h1>
+      <span id="session-duration" class="session-duration">0s</span>
+    </div>
+    <div class="header-right">
+      <a id="plan-link" href="#" class="plan-link" style="display:none">plan</a>
+      <span id="session-status" class="session-status">Waiting for agents...</span>
+      <span id="connection-status" class="status-badge connected">● Connected</span>
+    </div>
+  </header>
+
+  <!-- Workstream filters -->
+  <div id="workstream-filters" class="workstream-filters"></div>
+
+  <!-- Main content -->
+  <main>
+    <!-- Graph area -->
+    <div class="main-content">
+      <section id="graph-section" class="graph-section">
+        <div id="graph-container" class="graph-container">
+          <div class="empty-state">No agents spawned yet. The graph will appear when agents start working.</div>
+        </div>
+      </section>
+
+      <!-- Detail panel (hidden by default) -->
+      <aside id="detail-panel" class="detail-panel">
+        <div class="empty-state">Click an agent node to see details.</div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Events bar (collapsed by default) -->
+  <footer id="events-bar" class="events-bar">
+    <button id="events-toggle" class="events-toggle">Events (0)</button>
+    <div id="events-list" class="events-list">
+      <div class="empty-state">No events yet.</div>
+    </div>
+  </footer>
+
+  <!-- Plan viewer modal -->
+  <div id="plan-modal" class="plan-modal">
+    <div class="plan-modal-inner">
+      <div class="plan-modal-header">
+        <h3>Plan</h3>
+        <button id="plan-modal-close" class="plan-modal-close">&times;</button>
+      </div>
+      <div id="plan-content" class="plan-content">Loading...</div>
+    </div>
+  </div>
+
+  <script src="graph.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "agent-monitor-dashboard",
+  "version": "1.0.0",
+  "description": "Agent Monitor Dashboard for the Agentic Vibe Coding template",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "start:open": "node start.js --open",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": ["copilot", "agent", "dashboard", "monitor"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
