@@ -49,3 +49,20 @@
 - **Lessons Learned**:
   - Animation behavior (border-flash vs fill-flash) is not always obvious from README — document it alongside the map modes section for discoverability
 - **Status**: done
+
+## 2026-06-16 17:30:43 — Session Summary (Gate 5 WS1 Geodata Docs)
+- **Plan**: .plans/project/2026-06-16-162511-architecture-real-world-maps.md (§5, READ-ONLY); launch-plan WS1
+- **Branch**: feature/geodata/prep-and-manifest
+- **Commit**: 9cfeb58
+- **Tasks Completed**:
+  - Polished public/geodata/README.md for full reproducibility by a future maintainer
+  - Added intro tying bundle to Equal Earth equal-area projection + per-hex terrain (arch §3/§6) and "geographic accuracy over aesthetics" tenet
+  - Added explicit Prerequisites subsection: Node.js ≥18, GDAL (gdalwarp + ogr2ogr; noted gdal_translate NOT used), curl, unzip, network; install hints (brew/apt)
+  - Corrected geographic-accuracy policy: previously said "no smoothing or cleanup"; clarified the null-geometry filter (-where 'OGR_GEOMETRY IS NOT NULL') is a validity-only fix, not smoothing; documented -r near and no -simplify
+  - Documented --only subset behaviour preserves untouched layer bytes AND merges (not clobbers) PROVENANCE.json
+  - Added rivers format detail (477 LineString/MultiLineString features, name attribute only, 5-decimal precision) and a SYNTHETIC.txt row to the Files table
+  - Fixed cache size note (560 MB, was ~600 MB) and linked .gitignore / .cache; added Manifest schema subsection referencing frozen §5 contract
+- **Files Changed**: public/geodata/README.md
+- **Root README touched**: No — Real-World Map feature is not user-visible yet (UI lands WS4/WS5); deferred user-facing docs to that pass per delegation guidance
+- **Lessons Learned**: When a build script applies a "validity filter" (null-geometry drop), docs must distinguish it from smoothing/cleanup or they overstate "zero transformation"; cite the exact GDAL flag so it is auditable. Verify prose against final script flags (no stale gdal_translate).
+- **Status**: done

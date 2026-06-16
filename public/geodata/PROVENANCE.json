@@ -1,0 +1,67 @@
+{
+  "generatedAt": "2026-06-16T21:25:43.416Z",
+  "grid": {
+    "width": 2160,
+    "height": 1080,
+    "bounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
+    "seaLevel": 0
+  },
+  "koppenClasses": {
+    "0": "Ocean/NoData",
+    "1": "Af",
+    "2": "Am",
+    "3": "Aw",
+    "4": "BWh",
+    "5": "BWk",
+    "6": "BSh",
+    "7": "BSk",
+    "8": "Csa",
+    "9": "Csb",
+    "10": "Csc",
+    "11": "Cwa",
+    "12": "Cwb",
+    "13": "Cwc",
+    "14": "Cfa",
+    "15": "Cfb",
+    "16": "Cfc",
+    "17": "Dsa",
+    "18": "Dsb",
+    "19": "Dsc",
+    "20": "Dsd",
+    "21": "Dwa",
+    "22": "Dwb",
+    "23": "Dwc",
+    "24": "Dwd",
+    "25": "Dfa",
+    "26": "Dfb",
+    "27": "Dfc",
+    "28": "Dfd",
+    "29": "ET",
+    "30": "EF"
+  },
+  "layers": {
+    "elevation": {
+      "real": true,
+      "source": "ETOPO 2022 (60 arc-second, ice/sea surface elevation)",
+      "url": "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO2022/data/60s/60s_surface_elev_gtif/ETOPO_2022_v1_60s_N90W180_surface.tif",
+      "license": "Public domain (U.S. Government work, NOAA NCEI)"
+    },
+    "koppen": {
+      "real": true,
+      "source": "Köppen-Geiger climate classification V3 (Beck et al. 2023), 1991-2020 @ 0.1° [koppen_geiger_0p1.tif]",
+      "url": "https://ndownloader.figshare.com/files/61012822",
+      "license": "CC BY 4.0 — cite Beck et al. (2023), Scientific Data 10, 724"
+    },
+    "rivers": {
+      "real": true,
+      "source": "Natural Earth 50m Rivers + Lake Centerlines",
+      "url": "https://naciscdn.org/naturalearth/50m/physical/ne_50m_rivers_lake_centerlines.zip",
+      "license": "Public domain (Natural Earth)"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+# Downloaded source datasets and intermediate conversion artifacts.
+# These are large (hundreds of MB) and reproducible via build-geodata.mjs,
+# so they are never committed. Only the compact outputs in public/geodata/
+# are versioned.
+.cache/

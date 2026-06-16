@@ -78,3 +78,41 @@
   - `paint-land` vs `paint-biome` distinction often collapsed in implementation (both paint terrain) — check land-only filter explicitly.
   - Verify all keyboard shortcuts from architecture spec are implemented, not just the structural ones.
   - Hex distance formula in arch spec ("/ 2") was wrong; implementation (max without /2) is correct for axial coordinates.
+
+## 2026-06-16 17:21:43 — Session Summary
+- **Plan**: .plans/project/2026-06-16-162511-architecture-real-world-maps.md (§5/§6/§14); launch-plan WS1
+- **Branch Reviewed**: feature/geodata/prep-and-manifest (changes uncommitted/untracked in working tree)
+- **Commit**: 9cfeb58
+- **Verdict**: REQUEST CHANGES
+- **Critical Issues Found**: 0 critical. 1 Major: PROVENANCE.json only documents the `elevation` layer — `koppen` and `rivers` (both committed as REAL data) have no source/URL/license entry, because build-geodata.mjs overwrites PROVENANCE.json with only the `--only` subset each run and the final `--only` rebuild clobbered the other two layers.
+- **Patterns Flagged**:
+  - `--only=<layer>` partial rebuilds silently drop provenance for layers not rebuilt (PROVENANCE.json is fully rewritten, not merged) — reproducibility/idempotency trap.
+  - README.md carries full source+license+CC-BY attribution (Köppen Beck et al. 2023), so license-compliance is technically satisfied even though the "authoritative" PROVENANCE.json is incomplete.
+  - rivers.geojson contains 1 null-geometry feature (478 total) from ogr2ogr; verify scripts tolerate it but WS2 river hit-test must guard `f.geometry == null`.
+  - `have()` checks `gdal_translate` but the script never calls it (only gdalwarp + ogr2ogr) — stale requirement.
+- **Verified GOOD**:
+  - No data smoothing anywhere: gdalwarp `-r near` (nearest-neighbour, no blending), ogr2ogr with no `-simplify`; policy documented in README + script headers.
+  - Security: all source URLs HTTPS from official CDNs (NOAA NGDC, GloH2O/figshare, naciscdn/Natural Earth); execFileSync used with array args (no shell injection); the sole `sh -c` uses hardcoded literals only; no eval of downloaded content; no secrets.
+  - Repo hygiene: `scripts/geodata/.gitignore` excludes `.cache/` (793 MB sources); gate3 test asserts `git add -n` excludes `.cache/`.
+  - Manifest matches architecture §5 exactly (2160×1080, bounds [-180,-90,180,90], seaLevel 0, frozen schema, no extra keys).
+  - Real data confirmed: elevation range [-10698, 7534] m (real ETOPO), koppen.bin Uint8 codes 0–30 with real legend, rivers real names (Kama, Abay, Amur, Angara…), no synthetic flag, no SYNTHETIC.txt.
+  - Bundle size ruling: 7.58 MB committed (elev 4.67 + koppen 2.33 + rivers 0.58). ACCEPT AS-IS — 2160×1080 (~1/6°) is the minimum to avoid blockiness at the largest single-region grid (§5), reducing it would violate the geographic-accuracy mandate; app lazy-loads geodata only when the real-world panel opens. Recommend (non-blocking) gzip/brotli at serve time (koppen.bin and rivers.geojson compress very well).
+- **Lessons Learned**:
+  - When a build script writes a single provenance/manifest file but supports partial (`--only`) rebuilds, always check that partial runs MERGE rather than OVERWRITE — inspect the committed artifact, not just the code path.
+  - Verify committed asset timestamps vs. each other (koppen/rivers @17:07 vs elevation/PROVENANCE @17:14) to detect clobbered metadata from separate partial builds.
+
+## 2026-06-16 17:28:23 — Session Summary (Gate 4 RE-REVIEW)
+- **Plan**: .plans/project/2026-06-16-162511-architecture-real-world-maps.md (§5/§6/§14); launch-plan WS1
+- **Branch Reviewed**: feature/geodata/prep-and-manifest (working-tree changes)
+- **Commit**: 9cfeb58
+- **Verdict**: APPROVE
+- **Critical Issues Found**: 0 — all 3 prior findings RESOLVED, no regressions
+- **Re-review verification**:
+  - MAJOR (PROVENANCE incomplete) → RESOLVED. main() now seeds `provenance` from existing PROVENANCE.json (`Object.assign` over `prior.layers`) before rebuilding the `--only` subset, so a partial run preserves untouched layers (no clobber). `anySynthetic`/SYNTHETIC marker now derived from the FULL merged map. Committed PROVENANCE.json lists all 3 layers (elevation, koppen, rivers), each `real:true` with source/url/license.
+  - WARNING (null-geometry river) → RESOLVED. `ogr2ogr` now has `-where 'OGR_GEOMETRY IS NOT NULL'`. rivers.geojson = 477 features, 0 null geometries, only LineString/MultiLineString. Comment correctly frames it as a validity fix, not smoothing.
+  - NIT (stale gdal_translate) → RESOLVED. No `gdal_translate` references remain in scripts/geodata or README; `have()` checks gdalwarp + ogr2ogr only; header comment + README "Requires" updated.
+- **Regression guard**:
+  - elevation.bin 4665600 B / koppen.bin 2332800 B (byte-exact 2160×1080); elevation range [-10698, 7534] m unchanged from prior review → rasters untouched.
+  - gate3-verify.test.mjs: 24/24 PASS (now asserts no-null + count===477); verify-geodata.mjs: PASS (477 features).
+  - No smoothing introduced: `-r near`, no `-simplify`; policy documented.
+- **Lessons Learned**: Confirming a "merge not overwrite" fix requires inspecting BOTH the code path (seed-then-overwrite-subset) AND the committed artifact; the elevation range value is a cheap fingerprint to prove a raster was not rebuilt between reviews.

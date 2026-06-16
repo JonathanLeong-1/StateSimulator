@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "elevation": {
+    "file": "elevation.bin",
+    "width": 2160,
+    "height": 1080,
+    "bounds": [
+      -180,
+      -90,
+      180,
+      90
+    ],
+    "seaLevel": 0
+  },
+  "koppen": {
+    "file": "koppen.bin",
+    "width": 2160,
+    "height": 1080,
+    "bounds": [
+      -180,
+      -90,
+      180,
+      90
+    ]
+  },
+  "rivers": {
+    "file": "rivers.geojson"
+  }
+}

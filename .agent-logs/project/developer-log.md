@@ -130,3 +130,44 @@
   - Never call `setX` inside a `setY` functional updater — React will batch/defer these incorrectly; use a ref to track the value instead
   - When detecting secession vs conquest from ownership diff: check `newOwnerState.size === 1` (state just created with exactly one tile is a secession, not a conquest)
 - **Status**: done
+
+## 2026-06-16 17:15:24 — Session Summary
+- **Plan**: .plans/project/2026-06-16-162511-launch-plan-real-world-maps.md (arch: 2026-06-16-162511-architecture-real-world-maps.md §5–§6)
+- **Branch**: feature/geodata/prep-and-manifest
+- **Commit**: 9cfeb58
+- **Tasks Completed**:
+  - Built the missing `public/geodata/elevation.bin` via `node scripts/geodata/build-geodata.mjs --only=elevation` — used the WARM ETOPO 2022 cache (no re-download; script printed `cached: .../etopo_2022_60s_surface.tif (466.0 MB)`), nearest-neighbour warp, no smoothing
+  - Ran `verify-geodata.mjs` — PASSED all checks (manifest schema, dims, byte lengths, value ranges, coordinate samples, rivers FeatureCollection)
+  - Sanity-sampled elevation/koppen at requested coords
+- **Files Changed**: public/geodata/elevation.bin (created, 4,665,600 bytes = 2160×1080 Int16 LE)
+- **Verification**:
+  - elevation.bin length = 2160×1080×2 = 4,665,600 ✓ (matches manifest)
+  - elevation range [-10698, 7534] m; koppen max code 30; rivers 477 LineString/MultiLineString features
+  - Pacific (160°W,0°N) elev = -4928 m (ocean, ≤0) ✓; Himalaya (87°E,28°N) elev = 7278 m (>3000) ✓; Sahara (20°E,23°N) koppen = 4 = BWh "Arid, desert, hot" ✓
+  - Total committed public/geodata/ = 7,585,861 bytes (~7.59 MB): elevation.bin 4,665,600 + koppen.bin 2,332,800 + rivers.geojson 579,055 + manifest/PROVENANCE/README/legend
+- **Fixes Applied**: none — build/verify scripts were correct as written
+- **Lessons Learned**: ETOPO cache must stay warm; `scripts/geodata/.gitignore` (`.cache/`) keeps the 560 MB of sources unstaged — confirmed via `git add -n scripts/geodata` (no cache files). NO smoothing applied; geographic accuracy preserved.
+- **Status**: done
+- Log Written: yes
+
+## 2026-06-16 17:26:07 — Session Summary
+- **Plan**: .plans/project/2026-06-16-162511-architecture-real-world-maps.md (§5/§6/§14)
+- **Branch**: feature/geodata/prep-and-manifest
+- **Commit**: 9cfeb58
+- **Tasks Completed** (Gate 4 review fixes for WS1 geodata):
+  - MAJOR: Hardened `build-geodata.mjs` main() to MERGE freshly-built layers into the existing `PROVENANCE.json` `layers` map instead of starting from `{}` — seeds `provenance` from the prior file so `--only` runs preserve untouched layers. `anySynthetic` and the `SYNTHETIC.txt` layer list are now derived from the full merged map (merge-safe).
+  - MAJOR (regenerate): Ran full `node scripts/geodata/build-geodata.mjs` with warm caches — committed `PROVENANCE.json` now records ALL THREE layers (elevation, koppen, rivers) as REAL with correct source/url/license.
+  - WARNING: Added `-where "OGR_GEOMETRY IS NOT NULL"` to the rivers `ogr2ogr` call so null-geometry features are dropped at build time. `rivers.geojson` feature count 478 → 477, zero null geometries (LineString/MultiLineString only).
+  - NIT: Removed `gdal_translate` from the `have()` tooling check, the header doc comment, and the `public/geodata/README.md` "Requires" list (script only invokes gdalwarp + ogr2ogr).
+  - Updated `gate3-verify.test.mjs`: added "5.no null-geometry features" assertion and "5.feature count === 477" assertion.
+- **Files Changed**:
+  - `scripts/geodata/build-geodata.mjs`
+  - `scripts/geodata/gate3-verify.test.mjs`
+  - `public/geodata/README.md`
+  - `public/geodata/PROVENANCE.json` (regenerated — all 3 layers)
+  - `public/geodata/rivers.geojson` (regenerated — 477 features, no null geom)
+  - `public/geodata/manifest.json`, `koppen_legend.txt` (rewritten identically by full build)
+- **Fixes Applied**: PROVENANCE clobbering caused by per-`--only` runs starting from empty map → fixed with read-merge. Null river geometry would break WS2 hit-test → filtered at build.
+- **Verification**: elevation.bin & koppen.bin SHA-256 byte-exact vs pre-build (900eddf… / 779ac67…), 2160×1080 preserved. `verify-geodata.mjs` PASSED (exit 0). `gate3-verify.test.mjs` 24/24 ALL PASS (exit 0).
+- **Lessons Learned**: `--only` build scripts must read-merge any aggregate output file (provenance/markers) they rewrite, or earlier subsets get clobbered. Validity filtering (null geometry) is distinct from smoothing and is allowed.
+- **Status**: done (not committed — Gate 7 is the lead/architect's)
