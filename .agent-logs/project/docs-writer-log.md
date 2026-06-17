@@ -96,3 +96,18 @@
 - **Did NOT document**: the unreleased real-world map import / region-picker UI (WS4/WS5) — only the variable-grid/size-selector capability shipped in WS3
 - **Lessons Learned**: Read the actual UI component (MapBuilderPanel SIZE_PRESETS) and solver (gridForBudget) rather than trusting brief-stated dimensions — the custom input is per-axis with the total clamped to the 64k budget, which differs from the budget-floor framing. Verified all cited grid dimensions by computing gridForBudget.
 - **Status**: done
+
+## 2026-06-16 23:49:24 — Session Summary (Gate 5 WS6 Default-Map Build Script Docs)
+- **Plan**: .plans/project/2026-06-16-162511-architecture-real-world-maps.md (§9, READ-ONLY); launch-plan WS6
+- **Branch**: feature/geodata/generate-default-maps
+- **Commit**: 7111ec6
+- **Tasks Completed**:
+  - Added new "## Default Maps" section to root README.md (after Map Modes, before Map Builder)
+  - Listed all 10 pre-built regional maps: World, North America, South America, Americas, Africa, Europe, Asia, Eurasia, Oceania, Old World
+  - Described that each map is rasterized from elevation, climate, and river data and ready to load/customize in the Map Builder
+  - Added developer-facing note: "To regenerate maps after updating geodata, run `npm run generate-maps`"
+  - Verified scripts/geodata/README.md does not exist (no update needed there)
+  - Verified TEMPLATE-GUIDE.md was not modified (status: clean)
+- **Files Changed**: README.md (Default Maps section added)
+- **Lessons Learned**: The 10 default maps are user-facing assets; document them in root README under their own section for visibility. Keep the list concise and note the real-world data source. Developers need the `npm run generate-maps` command for future iterations.
+- **Status**: done

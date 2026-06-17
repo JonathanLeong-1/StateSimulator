@@ -201,3 +201,29 @@
 - **Lessons Learned**: When eslint reports a directive as *unused*, the underlying rule already permits the line, so deleting the directive is always safe — no need to re-add or alter the console call. `--fix` strips unused directives cleanly.
 - **Validation**: `npx eslint src/geo` → 0 errors, 0 warnings; `npm test` → 187 passed (15 files); `npm run build` → exit 0
 - **Status**: done
+
+## 2026-06-16 23:39:28 — Session Summary
+- **Plan**: .plans/project/2026-06-16-162511-architecture-real-world-maps.md § 9, 10; .plans/project/2026-06-16-162511-launch-plan-real-world-maps.md § 2
+- **Branch**: feature/geodata/generate-default-maps
+- **Commit**: 7111ec6
+- **Tasks Completed**:
+  - Created `scripts/generate-default-maps.ts` — TypeScript Node.js script that loads geodata, iterates over 10 DEFAULT_MAPS regions, calls rasterizeRegion() per region, writes SavedCustomMap JSON to public/maps/{id}.worldmap.json, logs progress
+  - Installed `tsx` dev dependency (v4+) to enable TypeScript module resolution in Node
+  - Updated `package.json` scripts: added `"generate-maps": "tsx scripts/generate-default-maps.ts"`
+  - Created `public/maps/.gitkeep` directory placeholder for git tracking
+  - Tested script: all 10 maps generated successfully (39,812–40,186 tiles per map)
+- **Files Changed**: 
+  - `scripts/generate-default-maps.ts` (created)
+  - `package.json` (modified: added npm script + tsx devDependency)
+  - `public/maps/.gitkeep` (created)
+- **Key Decisions**:
+  - TypeScript (.ts) + tsx runner instead of .mjs: allows direct imports from TS modules (GeoDataset.node.ts, rasterizeRegion.ts); avoids ESM loader complexity
+  - Hard-fail error strategy: exit on first error for debugging clarity; users can re-run after fixing
+  - Preserved async/await pattern for rasterizeRegion call
+- **Validation**: 
+  - `npm run generate-maps` → exit 0; all 10 maps written to public/maps/
+  - Spot-check world.worldmap.json: version=1, name="World", savedAt ISO, width=308, height=130, tiles=[40040] with correct { index, terrain, productivityOverride } structure
+  - File sizes 3.6–3.7 MB each; JSON valid
+- **Lessons Learned**: TypeScript scripts at Node CLI benefit from tsx (handles TS import resolution natively); avoids the complexity of ESM loaders or separate transpile steps; simpler than .mjs + dynamic imports
+- **Status**: done
+- Log Written: yes

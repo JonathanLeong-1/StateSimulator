@@ -75,6 +75,25 @@ This repository publishes the built Vite app through GitHub Pages Actions.
 | **Productivity** | Green heatmap with state color tint overlay and bold state borders; brighter = more productive |
 | **Obstacle** | Red heatmap with state color tint overlay and bold state borders; brighter = harder to conquer |
 
+## Default Maps
+
+Pre-built regional maps generated from real-world geographic data are ready to load:
+
+- **World** — Full globe at optimal resolution
+- **North America** — Covers USA, Canada, and northern Mexico
+- **South America** — Southern continent with Amazon, Andes, and grasslands
+- **Americas** — Combined North and South America
+- **Africa** — Full continent with varied terrain
+- **Europe** — European continent and Mediterranean
+- **Asia** — Asia and eastern Eurasia
+- **Eurasia** — Europe and Asia combined
+- **Oceania** — Australia, New Zealand, and Pacific islands
+- **Old World** — Africa, Europe, and Asia
+
+Each map is rasterized from elevation, climate, and river data. You can load them in the Map Builder to customize them further before running the simulation.
+
+**Developer note:** To regenerate maps after updating geodata, run `npm run generate-maps`.
+
 ## Map Builder
 
 The Map Builder lets you design a custom world before running the simulation on it. Click **🗺 Map Builder** in the header to enter the mode.
