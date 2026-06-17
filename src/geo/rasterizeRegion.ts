@@ -37,11 +37,15 @@ export interface RasterizeOptions {
   hillThreshold?: number;
   /** Supersampling factor k (k×k area-weighted samples per hex). Default 3. */
   supersample?: number;
+  /** Metres above sea level required to classify a cell as land (default 5).
+   *  A positive value eliminates shallow-shelf artefacts from ETOPO ice-surface
+   *  data without removing true low-lying coastal land (Florida, Bangladesh). */
+  seaLevelAdjustment?: number;
 }
 
 /** Default local-relief thresholds (metres). */
-const DEFAULT_MOUNTAIN_THRESHOLD = 900;
-const DEFAULT_HILL_THRESHOLD = 300;
+const DEFAULT_MOUNTAIN_THRESHOLD = 600;
+const DEFAULT_HILL_THRESHOLD = 200;
 
 /** Floor for the relief-sampling neighbourhood so it spans ≥ one source cell. */
 const MIN_RELIEF_DELTA_DEG = 0.15;
@@ -61,6 +65,7 @@ export async function rasterizeRegion(
   const k = Math.max(1, Math.floor(opts.supersample ?? 3));
   const mountainThreshold = opts.mountainThreshold ?? DEFAULT_MOUNTAIN_THRESHOLD;
   const hillThreshold = opts.hillThreshold ?? DEFAULT_HILL_THRESHOLD;
+  const seaLevelAdjustment = opts.seaLevelAdjustment ?? 5;
 
   const extent = projectedExtent(bbox);
   const { width, height } = solveDimensions(extent.aspect, opts.hexBudget);
@@ -97,11 +102,15 @@ export async function rasterizeRegion(
         for (let si = 0; si < k; si++) {
           const sx = cx + ((si + 0.5) / k - 0.5) * cellW;
           const sy = cy + ((sj + 0.5) / k - 0.5) * cellH;
-          const ll = inverse(sx, sy);
+          // Clamp to projected bounds before inverse() to prevent NaN/Infinity
+          // lon/lat at the poles (Equal Earth polar singularity).
+          const sxClamped = Math.min(maxX, Math.max(minX, sx));
+          const syClamped = Math.min(maxY, Math.max(minY, sy));
+          const ll = inverse(sxClamped, syClamped);
           const lon = ll.lonRad * (180 / Math.PI);
           const lat = ll.latRad * (180 / Math.PI);
           total++;
-          if (dataset.isLand(lon, lat)) {
+          if (dataset.isLand(lon, lat, seaLevelAdjustment)) {
             landCount++;
             const code = dataset.sampleKoppen(lon, lat);
             koppenCounts.set(code, (koppenCounts.get(code) ?? 0) + 1);

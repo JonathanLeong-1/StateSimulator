@@ -29,7 +29,7 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
   {
     id: 'north-america',
     name: 'North America',
-    bbox: { lonMin: -170, latMin: 7, lonMax: -10, latMax: 84 },
+    bbox: { lonMin: -170, latMin: 7, lonMax: -52, latMax: 84 },
   },
   {
     id: 'south-america',
@@ -59,7 +59,7 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
   {
     id: 'eurasia',
     name: 'Eurasia',
-    bbox: { lonMin: -25, latMin: -11, lonMax: 180, latMax: 78 },
+    bbox: { lonMin: -25, latMin: -11, lonMax: 170, latMax: 78 },
   },
   {
     id: 'oceania',
@@ -69,7 +69,7 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
   {
     id: 'old-world',
     name: 'Old World',
-    bbox: { lonMin: -25, latMin: -35, lonMax: 180, latMax: 78 },
+    bbox: { lonMin: -25, latMin: -35, lonMax: 170, latMax: 78 },
   },
 ] as const;
 
