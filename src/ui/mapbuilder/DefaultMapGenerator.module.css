@@ -1,0 +1,121 @@
+.container {
+  background: var(--color-surface, #1a1d27);
+  border: 1px solid var(--color-border, #2e3347);
+  border-radius: 4px;
+  padding: 1rem;
+  color: var(--color-text, #e0e2ef);
+  font-size: 0.85rem;
+}
+
+.container h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.description {
+  margin: 0 0 1rem 0;
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.loadingText {
+  text-align: center;
+  color: var(--color-text-muted, #6b7280);
+  padding: 1rem;
+}
+
+.generateAllBtn {
+  width: 100%;
+  background: var(--color-accent, #4f6ef7);
+  border: 1px solid var(--color-accent, #4f6ef7);
+  border-radius: 4px;
+  color: #fff;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.12s;
+  margin-bottom: 0.75rem;
+}
+
+.generateAllBtn:hover:not(:disabled) {
+  background: #3d56d1;
+}
+
+.generateAllBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  padding: 0.75rem;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid #ff4444;
+  border-radius: 4px;
+  color: #ff6666;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.progressList {
+  background: var(--color-surface-2, #252836);
+  border: 1px solid var(--color-border, #2e3347);
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+
+.progressItem {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  border-bottom: 1px solid var(--color-border, #2e3347);
+}
+
+.progressItem:last-child {
+  border-bottom: none;
+}
+
+.mapName {
+  flex: 1;
+  font-weight: 500;
+}
+
+.status {
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status_pending {
+  background: var(--color-surface-3, #2e3347);
+  color: var(--color-text-muted, #6b7280);
+}
+
+.status_generating {
+  background: rgba(79, 110, 247, 0.2);
+  color: #4f6ef7;
+}
+
+.status_complete {
+  background: rgba(0, 200, 0, 0.2);
+  color: #00c800;
+}
+
+.status_error {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff4444;
+}
+
+.errorMsg {
+  flex: 2;
+  color: #ff6666;
+  font-size: 0.7rem;
+  font-family: 'Monaco', 'Courier New', monospace;
+}
