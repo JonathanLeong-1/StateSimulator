@@ -171,3 +171,33 @@
 - **Verification**: elevation.bin & koppen.bin SHA-256 byte-exact vs pre-build (900eddf… / 779ac67…), 2160×1080 preserved. `verify-geodata.mjs` PASSED (exit 0). `gate3-verify.test.mjs` 24/24 ALL PASS (exit 0).
 - **Lessons Learned**: `--only` build scripts must read-merge any aggregate output file (provenance/markers) they rewrite, or earlier subsets get clobbered. Validity filtering (null geometry) is distinct from smoothing and is allowed.
 - **Status**: done (not committed — Gate 7 is the lead/architect's)
+
+## 2026-06-16 22:30:09 — Session Summary
+- **Plan**: .plans/project/2026-06-16-162511-launch-plan-real-world-maps.md (WS2 rasterizer core)
+- **Branch**: feature/geo/rasterizer-core
+- **Commit**: d741881
+- **Tasks Completed** (Gate 2.x build-integration defect fix):
+  - Fixed `npm run build` (tsc -b + vite build) which failed with TS2591 because the browser production typecheck (tsconfig.app.json, types=[vite/client], NO node) pulled in Node-only files.
+  - tsconfig.app.json: added `exclude` for `src/**/*.test.ts`, `src/**/*.test.tsx`, `src/**/*.node.ts` (kept `include: [src]`). Browser build no longer sees node APIs.
+  - Added tsconfig.test.json (extends tsconfig.app.json): types=[vite/client,node,vitest/globals], noEmit, own tsBuildInfoFile, include test+node files, `exclude: []` (override inherited app exclude so test files are actually picked up).
+  - Wired tsconfig.test.json into root tsconfig.json `references` so `tsc -b` type-checks test/node code in CI without polluting the browser bundle.
+  - Added `typecheck:test` npm script (`tsc -p tsconfig.test.json --noEmit`) as an explicit runnable entrypoint.
+- **Files Changed**: tsconfig.app.json, tsconfig.test.json (new), tsconfig.json, package.json
+- **Fixes Applied**: app build saw node:fs/node:path/Buffer/process from GeoDataset.node.ts + 2 test files → split into browser (app, excludes node/test) vs test (includes node/test, has node types) configs. Config-only; no source/test logic touched. GeoDataset.node.ts kept as the Node-only seam.
+- **Validation**: `npm run build` exit 0 (vite emitted dist/ 263.8kB js); `tsc -p tsconfig.test.json --noEmit` exit 0; `npm test` 165/165 pass (14 files); `npm run lint` only PRE-EXISTING errors in src/ui/mapbuilder/*.tsx (zero in changed config/JSON files).
+- **Lessons Learned**: When a project-references browser build (`include: [src]`) starts importing Node-only/test files, prefer config separation (exclude from app + dedicated test tsconfig with node types wired into references) over adding node types to the browser build. `extends` inherits `exclude`; a child that re-includes excluded files must set `exclude: []`.
+- **Status**: done
+- Log Written: yes
+
+## 2026-06-16 22:42:10 — Session Summary
+- **Plan**: .plans/project/2026-06-16-162511-architecture-real-world-maps.md (WS2 Gate 4 follow-up)
+- **Branch**: feature/geo/rasterizer-core
+- **Commit**: d741881
+- **Tasks Completed**:
+  - Removed 7 dead `eslint-disable-next-line no-console` directives flagged by Gate 4 review (unused-directive warnings)
+  - Applied via `npx eslint src/geo --fix` (auto-removes unused disable directives only)
+- **Files Changed**: src/geo/EqualEarth.test.ts (1 directive), src/geo/rasterizeRegion.geo.test.ts (6 directives) — 7 comment lines removed total; no test logic/assertions touched
+- **Fixes Applied**: Dead eslint-disable comments; root cause was console calls already permitted by config (so the disable directives were redundant). Removal is safe — underlying console.* calls remain valid.
+- **Lessons Learned**: When eslint reports a directive as *unused*, the underlying rule already permits the line, so deleting the directive is always safe — no need to re-add or alter the console call. `--fix` strips unused directives cleanly.
+- **Validation**: `npx eslint src/geo` → 0 errors, 0 warnings; `npm test` → 187 passed (15 files); `npm run build` → exit 0
+- **Status**: done

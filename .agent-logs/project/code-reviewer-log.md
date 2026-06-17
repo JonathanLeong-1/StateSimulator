@@ -116,3 +116,26 @@
   - gate3-verify.test.mjs: 24/24 PASS (now asserts no-null + count===477); verify-geodata.mjs: PASS (477 features).
   - No smoothing introduced: `-r near`, no `-simplify`; policy documented.
 - **Lessons Learned**: Confirming a "merge not overwrite" fix requires inspecting BOTH the code path (seed-then-overwrite-subset) AND the committed artifact; the elevation range value is a cheap fingerprint to prove a raster was not rebuilt between reviews.
+
+## 2026-06-16 22:40:08 — Session Summary (Gate 4 — WS2 Shared Rasterizer Core)
+- **Plan**: .plans/project/2026-06-16-162511-architecture-real-world-maps.md (§2–§7.1); launch-plan WS2
+- **Branch Reviewed**: feature/geo/rasterizer-core (src/geo/** untracked on WS1 base; configs in working tree)
+- **Commit**: d741881
+- **Verdict**: APPROVE
+- **Critical Issues Found**: 0
+- **Verification confirmations**:
+  - §3 Equal Earth constants EXACT (A1=1.340264, A2=-0.081106, A3=0.000893, A4=0.003796); forward x denom = 9A4θ⁸+7A3θ⁶+3A2θ²+A1 = yPolyPrime; inverse Newton–Raphson on monotone y-poly, asin args clamped [-1,1] at poles, denom never 0 (yPolyPrime≥A1>0; cos θ≥0.5 since |θ|≤asin(√3/2)≈60°). No NaN/Inf at ±90/±180.
+  - §4.3 dimension solver EXACT: HEX_ASPECT_FACTOR=2/√3≈1.1547, ratio=a·factor, gh=round(√(N/ratio)), gw=round(ratio·gh), clamp≥8 (MIN_DIM=8). Budgets DEFAULT=40k/MAX=64k/MIN=4k match §4.2. projectedExtent samples 17×17 to bound the curved box — sound.
+  - §6 pipeline ORDER correct: land/ocean (area-weighted, ties→ocean) → TRI mountains/hills (overrides biome) → modal Köppen biome → river overlay (terrain≠mountains, land). Supersample k used ONLY for land/ocean + modal Köppen (area-weighted classification), NOT smoothing. §6.2 honoured: no island/lake removal, no biome smoothing; tiles serialized directly.
+  - Köppen→biome (§6.1) matches legend: E(29,30)+subarctic{24,27,28}→tundra; B(4–7)→desert; Cs(8–10)→plains; A+Cf*/Cw*/Df*/Dw*/Ds*(1–28 remainder)→forest; 0/out-of-range→plains fallback. Ds* (17–20)→forest is a documented WS2 finalization (§6.1 delegates exact table to WS2) — acceptable.
+  - SavedCustomMap output valid (§2): version 1, contiguous index=r*width+q, productivityOverride null, terrain ∈ 8 TerrainTypes.
+  - GeoDataset environment-agnostic: no DOM/fs/fetch in core; Node fs isolated to GeoDataset.node.ts which is imported ONLY by test files (grep-confirmed; excluded from tsconfig.app browser build). Raster row 0 = +90 north (indexFor row=floor((latMax−lat)/Δlat·H)).
+  - Hex layout matches app: index=r*width+q (tileIndex, loadMap q=idx%width r=floor(idx/width)); rasterizer offsets ODD columns +0.5 row (further south) matching MapBuilderRenderer.tileCenter cy = √3·s·r + (q%2?√3·s/2:0) (odd shifted down). Even-q offset convention consistent.
+  - Config split correct: tsconfig.app excludes *.test.* + *.node.ts (browser build clean of node); tsconfig.test adds node+vitest/globals types & includes them; tsconfig.json references all three; `tsc -b` in build script type-checks test/node via reference → CI-enforced. typecheck:test script present. No strictness weakened (strict, noUnusedLocals/Parameters retained).
+  - Security/perf: O(W·H·k²) ≤ ~64k·9, Newton capped 12 iters, river lookup via 1° spatial hash, no unbounded loops/regex/eval/injection; JSON.parse only on local trusted bundle.
+  - Determinism: no RNG; modal ties resolve to first-inserted code (deterministic scan order); land/ocean exact-50% tie→ocean (documented). savedAt uses Date but does not affect tiles.
+  - Lint: `eslint src/geo/**/*.ts` → 0 errors (exit 0). 52 tests across 6 files.
+- **Minor (non-blocking)**:
+  - 7 ESLint warnings "Unused eslint-disable directive (no-console)" in EqualEarth.test.ts:77 and rasterizeRegion.geo.test.ts (67,78,88,98,108,171) — dead directives; remove for cleanliness (auto-fixable). Warnings only; CI `eslint .` exits 0.
+  - Pre-existing ~25 lint errors in src/ui/mapbuilder/*.tsx are unrelated to WS2 (per delegation) — not blocked.
+- **Lessons Learned**: For variable-grid rasterizers, the make-or-break correctness check is that the geographic sampling offset (odd-column +0.5 row) matches the renderer's pixel offset DIRECTION and the index formula matches loadMap/fromCustomMap — a sign flip would silently mis-shape every map. Verify denom-never-zero analytically for projection inverses (here |θ|≤60° ⇒ cosθ≥0.5) rather than trusting clamps alone.

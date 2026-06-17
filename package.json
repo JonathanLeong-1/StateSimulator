@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
+    "typecheck:test": "tsc -p tsconfig.test.json --noEmit",
     "geodata:build": "node scripts/geodata/build-geodata.mjs",
     "geodata:verify": "node scripts/geodata/verify-geodata.mjs"
   },

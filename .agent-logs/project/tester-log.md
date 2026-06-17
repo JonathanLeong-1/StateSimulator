@@ -89,3 +89,19 @@
 - **Fixes Applied**: None — all assertions passed on first run
 - **Lessons Learned**: Developer report said 477 river features; actual is 478 (benign off-by-one in the report, not a defect). Sampling formula must use manifest bounds (row 0 = north, lat descending) — confirmed against §5 layout.
 - **Status**: done
+
+## 2026-06-16 22:36:02 — Session Summary
+- **Plan**: `.plans/project/2026-06-16-162511-launch-plan-real-world-maps.md` (arch: `.plans/project/2026-06-16-162511-architecture-real-world-maps.md`)
+- **Branch**: `feature/geo/rasterizer-core`
+- **Commit**: `d741881`
+- **Tasks Completed**:
+  - Gate 3 validation for WS2 (Shared Rasterizer Core). Independently ran developer's 5 WS2 test files (baseline: geo 59 green; full 165 green).
+  - Area 1 (projection §3): added dense 1° round-trip grid (lat ±89, lon ±180) + extreme-corner convergence (±89.999, ±179.999) — no NaN, max err 2.665e-15.
+  - Area 2 (solver §4.3): asserted exact budget constants (DEFAULT 40000 / MAX 64000 / MIN 4000) + real-bbox tests (Eurasia/Americas/Switzerland/World) for budget±5%, physical≈projected aspect, tiny-budget clamp ≥8.
+  - Area 3 (Köppen §6.1): added exhaustive 1..30 expected-biome contract table (E→tundra, B→desert, Cs*→plains, tropical/humid→forest, Dfc/Dfd/Dwd→tundra).
+  - Area 4 (rasterize end-to-end, real data): new `rasterizeRegion.geo.test.ts` — Pacific (100% ocean), Himalaya (mountains), Sahara (desert), Arctic/Siberia (tundra), whole-world mix (ocean 73%, all biomes present), determinism (identical tiles), no-smoothing §6.2 (synthetic single-cell island survives as 1 isolated hex among 194 ocean), all-ocean dataset, null-river-geometry rasterize.
+  - Area 5 (defensive): river null/empty geometry tolerated at both dataset and rasterize level.
+- **Files Changed**: `src/geo/rasterizeRegion.geo.test.ts` (new), `src/geo/EqualEarth.test.ts`, `src/geo/dimensionSolver.test.ts`, `src/geo/koppen.test.ts`, `.agent-logs/project/tester-log.md`
+- **Fixes Applied**: None to app code (tester scope). Corrected one over-specified assertion in my own new test: the lone synthetic island classifies as `hills` (steep land→ocean TRI), not `forest` — verified-correct behavior, so assertion relaxed to "non-ocean land biome".
+- **Lessons Learned**: A single isolated land cell adjacent to deep ocean triggers the TRI/relief branch (large local elevation range) → hills/mountains before the Köppen biome step. Histograms via console.log only surface with `--disableConsoleIntercept`. No cosmetic post-processing confirmed by code inspection (each hex classified independently, serialized directly — no neighbour smoothing pass) AND empirically (isolated island preserved).
+- **Status**: done — Verdict ALL PASS (187 tests, 15 files; tsc test typecheck exit 0; build exit 0)

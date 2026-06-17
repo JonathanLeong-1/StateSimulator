@@ -66,3 +66,19 @@
 - **Root README touched**: No — Real-World Map feature is not user-visible yet (UI lands WS4/WS5); deferred user-facing docs to that pass per delegation guidance
 - **Lessons Learned**: When a build script applies a "validity filter" (null-geometry drop), docs must distinguish it from smoothing/cleanup or they overstate "zero transformation"; cite the exact GDAL flag so it is auditable. Verify prose against final script flags (no stale gdal_translate).
 - **Status**: done
+
+## 2026-06-16 22:44:21 — Session Summary (Gate 5 WS2 Rasterizer Core Docs)
+- **Plan**: .plans/project/2026-06-16-162511-architecture-real-world-maps.md (§3/§4/§6/§7, READ-ONLY); launch-plan WS2
+- **Branch**: feature/geo/rasterizer-core
+- **Commit**: d741881
+- **Tasks Completed**:
+  - Created src/geo/README.md — developer-facing module doc for the shared rasterizer core
+  - Covered: purpose (real-world map gen, terrain-only output), Equal Earth equal-area projection (no Mercator distortion), variable-dimension + hex-budget model (comparable hex counts; smaller region = higher resolution), the 4-step classification pipeline order, the geographic-accuracy/no-post-processing policy (supersampling = area-weighting only), the GeoDataset browser-vs-node seam, public API surface, and Node/browser usage examples
+  - Linked architecture doc for full detail rather than duplicating it; documented build/type-check seam (tsconfig.app.json excludes test+node files; npm run typecheck:test)
+  - Reviewed all existing TSDoc on public functions (EqualEarth, GeoDataset, dimensionSolver, koppen, rasterizeRegion, defaultMaps) — found ACCURATE; no corrections required
+  - Verified cited script/config names against package.json + tsconfig.test.json/tsconfig.app.json before publishing
+- **Files Changed**: src/geo/README.md (new)
+- **TSDoc corrections**: none — existing doc comments matched code behavior
+- **Root README touched**: No — Real-World Map UI not shipped (WS4/WS5); deferred per delegation
+- **Lessons Learned**: The §7.1 architecture snippet shows rasterizeRegion(bbox, width, height, opts) but the implemented + §7-prose signature is (bbox, dataset, opts); documented the actual shipped signature. Verify config/script names against package.json before citing them in docs.
+- **Status**: done
