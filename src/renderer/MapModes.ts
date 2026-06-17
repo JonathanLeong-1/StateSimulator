@@ -40,7 +40,6 @@ function heatmapColor(value: number, low: string, high: string): string {
 export function getTileColor(
   tile: HexTile,
   mode: MapMode,
-  _stateColor: string | null,
 ): string {
   let color: string;
 

@@ -39,6 +39,7 @@ interface MapBuilderContextValue {
 
 const MapBuilderContext = createContext<MapBuilderContextValue | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useMapBuilder(): MapBuilderContextValue {
   const ctx = useContext(MapBuilderContext);
   if (!ctx) throw new Error('useMapBuilder must be used inside MapBuilderProvider');

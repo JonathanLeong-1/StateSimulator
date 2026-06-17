@@ -72,7 +72,7 @@ export class HexRenderer {
     // PASS 1: fill terrain colors
     for (const tile of tiles) {
       const [cx, cy] = this.tileCenter(tile.q, tile.r);
-      const color = getTileColor(tile, uiState.mapMode, null);
+      const color = getTileColor(tile, uiState.mapMode);
 
       ctx.beginPath();
       const verts = hexVertices(cx, cy, HEX_SIZE - 0.5);

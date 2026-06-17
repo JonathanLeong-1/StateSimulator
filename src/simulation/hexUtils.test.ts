@@ -107,13 +107,13 @@ describe('bfsConnectedComponents', () => {
   });
 
   it('should handle a single tile input', () => {
-    const comps = bfsConnectedComponents([5], (_i) => []);
+    const comps = bfsConnectedComponents([5], () => []);
     expect(comps).toHaveLength(1);
     expect(comps[0]).toEqual([5]);
   });
 
   it('should return empty array when input is empty', () => {
-    const comps = bfsConnectedComponents([], (_i) => []);
+    const comps = bfsConnectedComponents([], () => []);
     expect(comps).toHaveLength(0);
   });
 });

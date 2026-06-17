@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 import { useSimulation } from '../SimulationContext';
+import { TipBtn } from './SimSettings/TipBtn';
+import { TipBox } from './SimSettings/TipBox';
 import styles from '../styles/SimSettings.module.css';
 
 const TIPS: Record<string, string> = {
@@ -31,22 +33,6 @@ export function SimSettings() {
     e.stopPropagation();
     setActiveTip(prev => prev === key ? null : key);
   };
-
-  const TipBtn = ({ tipKey }: { tipKey: string }) => (
-    <button
-      className={styles.tipBtn}
-      onClick={e => toggleTip(tipKey, e)}
-      aria-label={`Info for ${tipKey}`}
-      type="button"
-    >
-      ⓘ
-    </button>
-  );
-
-  const TipBox = ({ tipKey }: { tipKey: string }) =>
-    activeTip === tipKey ? (
-      <div className={styles.tipBox}>{TIPS[tipKey]}</div>
-    ) : null;
 
   const {
     uiState,
@@ -111,45 +97,45 @@ export function SimSettings() {
           <div className={styles.section}>
             <div className={styles.labelRow}>
               <label className={styles.label}>Conflict Frequency: {settings.baseConflictRate.toFixed(2)}</label>
-              <TipBtn tipKey="baseConflictRate" />
+              <TipBtn tipKey="baseConflictRate" onClick={toggleTip} />
             </div>
-            <TipBox tipKey="baseConflictRate" />
+            <TipBox tipKey="baseConflictRate" activeTip={activeTip} tips={TIPS} />
             <input type="range" min={0.1} max={1.0} step={0.05} value={settings.baseConflictRate}
               onChange={e => changeSettings({ baseConflictRate: Number(e.target.value) })}
               className={styles.slider} />
 
             <div className={styles.labelRow}>
               <label className={styles.label}>Sea Conquest: {settings.seaConquestChance.toFixed(2)}</label>
-              <TipBtn tipKey="seaConquestChance" />
+              <TipBtn tipKey="seaConquestChance" onClick={toggleTip} />
             </div>
-            <TipBox tipKey="seaConquestChance" />
+            <TipBox tipKey="seaConquestChance" activeTip={activeTip} tips={TIPS} />
             <input type="range" min={0.0} max={0.5} step={0.05} value={settings.seaConquestChance}
               onChange={e => changeSettings({ seaConquestChance: Number(e.target.value) })}
               className={styles.slider} />
 
             <div className={styles.labelRow}>
               <label className={styles.label}>Secession Rate: {settings.secessionRate.toFixed(2)}</label>
-              <TipBtn tipKey="secessionRate" />
+              <TipBtn tipKey="secessionRate" onClick={toggleTip} />
             </div>
-            <TipBox tipKey="secessionRate" />
+            <TipBox tipKey="secessionRate" activeTip={activeTip} tips={TIPS} />
             <input type="range" min={0.0} max={1.0} step={0.05} value={settings.secessionRate}
               onChange={e => changeSettings({ secessionRate: Number(e.target.value) })}
               className={styles.slider} />
 
             <div className={styles.labelRow}>
               <label className={styles.label}>Geography Difficulty: {settings.geographyDifficulty.toFixed(1)}</label>
-              <TipBtn tipKey="geographyDifficulty" />
+              <TipBtn tipKey="geographyDifficulty" onClick={toggleTip} />
             </div>
-            <TipBox tipKey="geographyDifficulty" />
+            <TipBox tipKey="geographyDifficulty" activeTip={activeTip} tips={TIPS} />
             <input type="range" min={0.2} max={2.0} step={0.1} value={settings.geographyDifficulty}
               onChange={e => changeSettings({ geographyDifficulty: Number(e.target.value) })}
               className={styles.slider} />
 
             <div className={styles.labelRow}>
               <label className={styles.label}>Productivity Influence: {settings.productivityInfluence.toFixed(1)}</label>
-              <TipBtn tipKey="productivityInfluence" />
+              <TipBtn tipKey="productivityInfluence" onClick={toggleTip} />
             </div>
-            <TipBox tipKey="productivityInfluence" />
+            <TipBox tipKey="productivityInfluence" activeTip={activeTip} tips={TIPS} />
             <input type="range" min={0.2} max={2.0} step={0.1} value={settings.productivityInfluence}
               onChange={e => changeSettings({ productivityInfluence: Number(e.target.value) })}
               className={styles.slider} />
@@ -163,9 +149,9 @@ export function SimSettings() {
                   onChange={e => changeSettings({ enableSeaConquest: e.target.checked })} />
                 Sea Conquest
               </label>
-              <TipBtn tipKey="enableSeaConquest" />
+              <TipBtn tipKey="enableSeaConquest" onClick={toggleTip} />
             </div>
-            <TipBox tipKey="enableSeaConquest" />
+            <TipBox tipKey="enableSeaConquest" activeTip={activeTip} tips={TIPS} />
 
             <div className={styles.toggleRow}>
               <label className={styles.toggleLabel}>
@@ -173,9 +159,9 @@ export function SimSettings() {
                   onChange={e => changeSettings({ enableSecession: e.target.checked })} />
                 Secession
               </label>
-              <TipBtn tipKey="enableSecession" />
+              <TipBtn tipKey="enableSecession" onClick={toggleTip} />
             </div>
-            <TipBox tipKey="enableSecession" />
+            <TipBox tipKey="enableSecession" activeTip={activeTip} tips={TIPS} />
 
             <div className={styles.toggleRow}>
               <label className={styles.toggleLabel}>
@@ -183,9 +169,9 @@ export function SimSettings() {
                   onChange={e => changeSettings({ enableCapitalDistanceUnrest: e.target.checked })} />
                 Capital Distance Unrest
               </label>
-              <TipBtn tipKey="enableCapitalDistanceUnrest" />
+              <TipBtn tipKey="enableCapitalDistanceUnrest" onClick={toggleTip} />
             </div>
-            <TipBox tipKey="enableCapitalDistanceUnrest" />
+            <TipBox tipKey="enableCapitalDistanceUnrest" activeTip={activeTip} tips={TIPS} />
 
             <div className={styles.toggleRow}>
               <label className={styles.toggleLabel}>
@@ -193,9 +179,9 @@ export function SimSettings() {
                   onChange={e => changeSettings({ enableDisconnectedSplit: e.target.checked })} />
                 Split Disconnected States
               </label>
-              <TipBtn tipKey="enableDisconnectedSplit" />
+              <TipBtn tipKey="enableDisconnectedSplit" onClick={toggleTip} />
             </div>
-            <TipBox tipKey="enableDisconnectedSplit" />
+            <TipBox tipKey="enableDisconnectedSplit" activeTip={activeTip} tips={TIPS} />
           </div>
 
           {/* Save / Load / Export */}
