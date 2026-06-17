@@ -37,14 +37,10 @@ export interface RasterizeOptions {
   hillThreshold?: number;
   /** Supersampling factor k (k×k area-weighted samples per hex). Default 3. */
   supersample?: number;
-  /** Metres above sea level required to classify a cell as land (default 5).
-   *  A positive value eliminates shallow-shelf artefacts from ETOPO ice-surface
-   *  data without removing true low-lying coastal land (Florida, Bangladesh). */
-  seaLevelAdjustment?: number;
 }
 
 /** Default local-relief thresholds (metres). */
-const DEFAULT_MOUNTAIN_THRESHOLD = 600;
+const DEFAULT_MOUNTAIN_THRESHOLD = 1500;
 const DEFAULT_HILL_THRESHOLD = 200;
 
 /** Floor for the relief-sampling neighbourhood so it spans ≥ one source cell. */
@@ -65,7 +61,6 @@ export async function rasterizeRegion(
   const k = Math.max(1, Math.floor(opts.supersample ?? 3));
   const mountainThreshold = opts.mountainThreshold ?? DEFAULT_MOUNTAIN_THRESHOLD;
   const hillThreshold = opts.hillThreshold ?? DEFAULT_HILL_THRESHOLD;
-  const seaLevelAdjustment = opts.seaLevelAdjustment ?? 5;
 
   const extent = projectedExtent(bbox);
   const { width, height } = solveDimensions(extent.aspect, opts.hexBudget);
@@ -94,7 +89,17 @@ export async function rasterizeRegion(
       const centerLon = center.lonRad * (180 / Math.PI);
       const centerLat = center.latRad * (180 / Math.PI);
 
-      // --- (1) area-weighted land/ocean + collect Köppen over land samples ---
+      // Polar guard: hexes whose center maps beyond ±88° are forced to ocean.
+      // At exactly ±90° the ETOPO raster's row-0/last-row cells cover the pole
+      // (Greenland/Antarctic ice) — positive elevation — which would make every
+      // hex in the top/bottom row appear as a solid land band. Since these
+      // extreme latitudes are uninteresting for the simulation (all ice/ocean),
+      // treating them as ocean is both correct and artifact-free.
+      if (Math.abs(centerLat) > 88) {
+        tiles[index] = { index, terrain: 'ocean', productivityOverride: null };
+        continue;
+      }
+
       let landCount = 0;
       let total = 0;
       const koppenCounts = new Map<number, number>();
@@ -110,7 +115,7 @@ export async function rasterizeRegion(
           const lon = ll.lonRad * (180 / Math.PI);
           const lat = ll.latRad * (180 / Math.PI);
           total++;
-          if (dataset.isLand(lon, lat, seaLevelAdjustment)) {
+          if (dataset.isLand(lon, lat)) {
             landCount++;
             const code = dataset.sampleKoppen(lon, lat);
             koppenCounts.set(code, (koppenCounts.get(code) ?? 0) + 1);

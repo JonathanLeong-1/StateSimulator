@@ -57,14 +57,8 @@ export interface GeoDataset {
   sampleElevation(lonDeg: number, latDeg: number): number;
   /** Köppen class code at the given lon/lat (nearest-neighbour; never interpolated). */
   sampleKoppen(lonDeg: number, latDeg: number): number;
-  /**
-   * True when elevation is above `seaLevel + seaLevelAdjustment`.
-   *
-   * @param seaLevelAdjustment metres to add to sea level before the land test
-   *   (default 0). A positive value eliminates shallow-shelf artefacts from
-   *   ETOPO ice-surface data; pass the same value used in `RasterizeOptions`.
-   */
-  isLand(lonDeg: number, latDeg: number, seaLevelAdjustment?: number): boolean;
+  /** True when elevation is strictly above sea level. */
+  isLand(lonDeg: number, latDeg: number): boolean;
   /** True when any river segment passes within `radiusDeg` of the point. */
   riverNear(lonDeg: number, latDeg: number, radiusDeg: number): boolean;
 }
@@ -285,8 +279,8 @@ export class RasterGeoDataset implements GeoDataset {
     return this.koppen[idx];
   }
 
-  isLand(lonDeg: number, latDeg: number, seaLevelAdjustment = 0): boolean {
-    return this.sampleElevation(lonDeg, latDeg) > this.seaLevel + seaLevelAdjustment;
+  isLand(lonDeg: number, latDeg: number): boolean {
+    return this.sampleElevation(lonDeg, latDeg) > this.seaLevel;
   }
 
   riverNear(lonDeg: number, latDeg: number, radiusDeg: number): boolean {
