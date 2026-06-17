@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "maps": [
+    {
+      "id": "world",
+      "name": "World",
+      "file": "world.worldmap.json",
+      "bbox": { "lonMin": -180, "latMin": -90, "lonMax": 180, "latMax": 90 },
+      "hexBudget": 40000
+    },
+    {
+      "id": "north-america",
+      "name": "North America",
+      "file": "north-america.worldmap.json",
+      "bbox": { "lonMin": -170, "latMin": 7, "lonMax": -10, "latMax": 84 },
+      "hexBudget": 40000
+    },
+    {
+      "id": "south-america",
+      "name": "South America",
+      "file": "south-america.worldmap.json",
+      "bbox": { "lonMin": -82, "latMin": -56, "lonMax": -34, "latMax": 13 },
+      "hexBudget": 40000
+    },
+    {
+      "id": "americas",
+      "name": "Americas",
+      "file": "americas.worldmap.json",
+      "bbox": { "lonMin": -170, "latMin": -56, "lonMax": -34, "latMax": 84 },
+      "hexBudget": 40000
+    },
+    {
+      "id": "africa",
+      "name": "Africa",
+      "file": "africa.worldmap.json",
+      "bbox": { "lonMin": -19, "latMin": -35, "lonMax": 52, "latMax": 38 },
+      "hexBudget": 40000
+    },
+    {
+      "id": "europe",
+      "name": "Europe",
+      "file": "europe.worldmap.json",
+      "bbox": { "lonMin": -25, "latMin": 34, "lonMax": 45, "latMax": 72 },
+      "hexBudget": 40000
+    },
+    {
+      "id": "asia",
+      "name": "Asia",
+      "file": "asia.worldmap.json",
+      "bbox": { "lonMin": 25, "latMin": -11, "lonMax": 180, "latMax": 78 },
+      "hexBudget": 40000
+    },
+    {
+      "id": "eurasia",
+      "name": "Eurasia",
+      "file": "eurasia.worldmap.json",
+      "bbox": { "lonMin": -25, "latMin": -11, "lonMax": 180, "latMax": 78 },
+      "hexBudget": 40000
+    },
+    {
+      "id": "oceania",
+      "name": "Oceania",
+      "file": "oceania.worldmap.json",
+      "bbox": { "lonMin": 110, "latMin": -48, "lonMax": 180, "latMax": -10 },
+      "hexBudget": 40000
+    },
+    {
+      "id": "old-world",
+      "name": "Old World",
+      "file": "old-world.worldmap.json",
+      "bbox": { "lonMin": -25, "latMin": -35, "lonMax": 180, "latMax": 78 },
+      "hexBudget": 40000
+    }
+  ]
+}

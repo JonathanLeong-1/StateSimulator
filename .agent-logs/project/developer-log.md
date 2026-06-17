@@ -227,3 +227,35 @@
 - **Lessons Learned**: TypeScript scripts at Node CLI benefit from tsx (handles TS import resolution natively); avoids the complexity of ESM loaders or separate transpile steps; simpler than .mjs + dynamic imports
 - **Status**: done
 - Log Written: yes
+
+## 2026-06-16 23:53:39 — Session Summary (WS5 — Default-Map Manifest & Picker UI)
+
+- **Plan**: `.plans/project/2026-06-16-162511-launch-plan-real-world-maps.md` § 3 (WS5 delegation)
+- **Branch**: `feature/mapbuilder/default-maps-manifest`
+- **Commit**: 4bc05f1
+- **Tasks Completed**:
+  - Created `public/defaultMaps.json` manifest with metadata for all 10 default maps (world, north-america, south-america, americas, africa, europe, asia, eurasia, oceania, old-world)
+  - Updated `src/ui/mapbuilder/MapBuilderPanel.tsx` to replace hardcoded "🗺 Eurasia" button with data-driven default maps picker (dropdown select component)
+  - Implemented map selection logic: fetches `public/maps/{id}.worldmap.json` and loads via `ctx.loadMap()`
+  - Added loading state to prevent double-clicks during map fetch
+  - Updated `src/ui/mapbuilder/MapBuilderPanel.module.css` with `.mapSelect` and `.loadingText` styles
+  - Created comprehensive unit tests in `src/ui/mapbuilder/MapBuilderPanel.test.tsx` verifying manifest structure, all 10 maps present, bbox validation, unique IDs, naming conventions, hexBudget validation
+- **Files Changed**:
+  - `public/defaultMaps.json` (created)
+  - `src/ui/mapbuilder/MapBuilderPanel.tsx` (updated)
+  - `src/ui/mapbuilder/MapBuilderPanel.module.css` (updated)
+  - `src/ui/mapbuilder/MapBuilderPanel.test.tsx` (created)
+- **Key Decisions**:
+  - Chose dropdown select UI over button group to keep UI compact (10 maps is too many buttons)
+  - Manifest data manually transcribed from `src/geo/defaultMaps.ts` DEFAULT_MAPS constant (simpler than code-gen for MVP)
+  - Used browser's native fetch API for map loading (same pattern as existing `loadEurasia`)
+  - Tests load manifest from file system at test time using Node.js fs module (more reliable than fetch in vitest)
+- **Concerns**: None; all acceptance criteria met
+- **Test Results**:
+  - All 245 tests pass (9 new tests in MapBuilderPanel.test.tsx, 236 existing tests remain passing)
+  - No regressions to existing MapBuilderPanel functionality
+- **Build & Lint**:
+  - `npm run build`: ✓ Success (dist/ generated, 267 KB JS + 20 KB CSS)
+  - `npm run lint`: ✓ No errors in modified files (MapBuilderPanel.tsx, MapBuilderPanel.test.tsx)
+- **Status**: done
+- Log Written: yes

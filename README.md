@@ -77,7 +77,7 @@ This repository publishes the built Vite app through GitHub Pages Actions.
 
 ## Default Maps
 
-Pre-built regional maps generated from real-world geographic data are ready to load:
+Pre-built regional maps generated from real-world geographic data are ready to load in the Map Builder:
 
 - **World** — Full globe at optimal resolution
 - **North America** — Covers USA, Canada, and northern Mexico
@@ -90,7 +90,7 @@ Pre-built regional maps generated from real-world geographic data are ready to l
 - **Oceania** — Australia, New Zealand, and Pacific islands
 - **Old World** — Africa, Europe, and Asia
 
-Each map is rasterized from elevation, climate, and river data. You can load them in the Map Builder to customize them further before running the simulation.
+Each map is rasterized from elevation, climate, and river data. When you open the Map Builder, select a map from the **Load Default Map** dropdown to load any of these pre-built worlds, then customize them further with paint tools before running the simulation.
 
 **Developer note:** To regenerate maps after updating geodata, run `npm run generate-maps`.
 
@@ -153,7 +153,7 @@ Choose from 7 land terrain types — Plains, River Valley, Forest, Hills, Desert
 | Action | Description |
 |--------|-------------|
 | **Random Continents** | Procedurally generate landmasses on the blank canvas |
-| **Eurasia** | Load the hand-crafted Eurasia map directly into the editor |
+| **Load Default Map** | Choose from a dropdown of 10 pre-built regional maps (World, North America, Africa, Europe, Asia, Eurasia, Oceania, Americas, and more) rasterized from real-world geodata |
 | **Clear Map** | Reset the entire grid to ocean |
 | **Undo / Redo** | Up to 50 steps — `Ctrl+Z` / `Ctrl+Shift+Z` |
 | **Save Map (💾)** | Download the current map layout as a JSON file |
@@ -163,7 +163,7 @@ Choose from 7 land terrain types — Plains, River Valley, Forest, Hills, Desert
 ### Workflow
 
 1. Click **🗺 Map Builder** in the header.
-2. Pick a **map size** — keep the default Small preset (160 × 100), choose Medium/Large, or enter custom dimensions. Then start from the blank ocean grid or click **Random Continents** for a procedurally generated starting point.
+2. Pick a **map size** — keep the default Small preset (160 × 100), choose Medium/Large, or enter custom dimensions. Then start from the blank ocean grid, click **Random Continents** for procedurally generated landmasses, or select a pre-built map from the **Load Default Map** dropdown (World, North America, Africa, Europe, Asia, Eurasia, Oceania, Americas, South America, or Old World).
 3. Select a paint tool and biome, then click or drag to paint tiles.
 4. Use **Save Map** to preserve your work; use **Load Map** to restore it later.
 5. Click **▶ Run Simulation on This Map** to hand the world to the simulator and watch it play out.

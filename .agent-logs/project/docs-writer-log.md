@@ -111,3 +111,19 @@
 - **Files Changed**: README.md (Default Maps section added)
 - **Lessons Learned**: The 10 default maps are user-facing assets; document them in root README under their own section for visibility. Keep the list concise and note the real-world data source. Developers need the `npm run generate-maps` command for future iterations.
 - **Status**: done
+
+## 2026-06-17 00:02:55 — Session Summary (Gate 5 WS5 Default-Map Manifest & Picker UI)
+- **Plan**: .plans/project/2026-06-16-162511-launch-plan-real-world-maps.md (§9/§10, READ-ONLY); launch-plan WS5
+- **Branch**: feature/mapbuilder/default-maps-manifest
+- **Commit**: 4bc05f1
+- **Tasks Completed**:
+  - Updated root README.md "Default Maps" section to clarify the Map Builder integration: changed "You can load them in the Map Builder" to "When you open the Map Builder, select a map from the **Load Default Map** dropdown to load any of these pre-built worlds, then customize them further with paint tools before running the simulation"
+  - Updated root README.md "Map Actions" table: replaced hardcoded "**Eurasia** | Load the hand-crafted Eurasia map directly into the editor" row with "**Load Default Map** | Choose from a dropdown of 10 pre-built regional maps (World, North America, Africa, Europe, Asia, Eurasia, Oceania, Americas, and more) rasterized from real-world geodata"
+  - Updated root README.md "Workflow" step 2: expanded instruction to list the dropdown as an option alongside blank grid and random continents: "...or select a pre-built map from the **Load Default Map** dropdown (World, North America, Africa, Europe, Asia, Eurasia, Oceania, Americas, South America, or Old World)"
+  - Added new "## Default maps integration" section to src/geo/README.md after the "Build & type-check seam" section, documenting: (1) maps generated offline by scripts/generate-default-maps.ts, (2) bundled as metadata in public/defaultMaps.json, (3) loaded by users via the Map Builder UI dropdown, and (4) extensibility note (no code changes needed to add new maps to DEFAULT_MAPS)
+  - Verified TEMPLATE-GUIDE.md was not modified (status: clean)
+- **Files Changed**: README.md, src/geo/README.md
+- **Documentation scope**: User-facing (new dropdown picker UI) + developer-facing (extensibility pattern and link between src/geo/ and public/defaultMaps.json / scripts/)
+- **Did NOT document**: The unreleased region picker (WS4) or the dev generator UI (also WS4); only the user-visible Map Builder dropdown picker and default maps list
+- **Lessons Learned**: When a UI element replaces hardcoded functionality, update all related documentation tables and workflows to mention the new UI prominently. Cross-reference the bundled manifest location (public/defaultMaps.json) in the geo README so developers understand the data flow: code → manifest → UI
+- **Status**: done

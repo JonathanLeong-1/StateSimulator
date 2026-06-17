@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { SavedCustomMap } from '../types/mapbuilder';
 import type { TerrainType } from '../types/world';
@@ -116,7 +116,7 @@ function getTerrainPercent(map: SavedCustomMap, terrain: TerrainType): number {
 
 describe('Generate Default Maps — Integration Test', () => {
   const mapDir = join(process.cwd(), 'public', 'maps');
-  let loadedMaps: Record<string, SavedCustomMap> = {};
+  const loadedMaps: Record<string, SavedCustomMap> = {};
 
   beforeAll(() => {
     // Load all 10 maps
@@ -150,7 +150,7 @@ describe('Generate Default Maps — Integration Test', () => {
   it('should have all files be >3.5 MB (data-dense)', () => {
     for (const id of EXPECTED_MAP_IDS) {
       const filePath = join(mapDir, `${id}.worldmap.json`);
-      const stats = require('node:fs').statSync(filePath);
+      const stats = statSync(filePath);
       expect(
         stats.size / 1024 / 1024,
         `${id}.worldmap.json should be >3.5 MB`,

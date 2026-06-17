@@ -166,3 +166,47 @@
 - Log written: **yes**
 - All tests passing: **yes** (233/233)
 - Ready for Gate 4 (Code Review): **yes**
+
+---
+
+## 2026-06-16 23:57:19 — Session Summary: Gate 3 Testing WS5 Default Maps & Picker UI
+- **Plan**: `.plans/project/2026-06-16-162511-launch-plan-real-world-maps.md`
+- **Workstream**: WS5 (Default-Map Manifest & Picker UI)
+- **Branch**: `feature/mapbuilder/default-maps-manifest`
+- **Commit**: `4bc05f1`
+- **Lead**: `@frontend-lead`
+- **Tasks Completed**:
+  - Reviewed delegation payload and plan reference from frontend-lead
+  - Verified @developer's 10 manifest tests (all passing)
+  - Enhanced test suite with 9 new comprehensive tests covering UI logic, rendering, and extensibility
+  - Verified MapBuilderPanel.tsx implementation: dropdown picker, fetch logic, loading states, error handling
+  - Verified MapBuilderPanel.module.css: styling for mapSelect (hover, disabled) and loadingText
+  - Verified SimulationContext.tsx: boot map loads Eurasia default with fallback
+  - Verified defaultMaps.json: valid JSON with all 10 maps (id, name, file, bbox, hexBudget)
+  - Ran full test suite to confirm all tests pass
+- **Files Changed**: 
+  - `src/ui/mapbuilder/MapBuilderPanel.test.tsx` (enhanced with 9 new tests)
+- **Test Results**:
+  - Starting baseline: 245 tests across 20 files
+  - New tests added: 9
+  - Final count: 254 tests, ALL PASSING ✓
+  - MapBuilderPanel.test.tsx: 21 tests, ALL PASSING ✓
+- **Coverage Areas**:
+  1. **Manifest Validation** — Structure, format, 10 maps present, required fields, bbox bounds, hexBudget range, file naming
+  2. **Picker UI Logic** — Empty selection, disabled during load, loading message, renders all 10 maps, file paths for fetch
+  3. **Error Handling** — Graceful degradation on fetch failure, error logging
+  4. **Extensibility** — Data-driven manifest structure verified (no hardcoded map names in component)
+- **Spot-Checks Passing**:
+  - ✓ Manifest version is 1
+  - ✓ Contains exactly 10 maps (world, north-america, south-america, americas, africa, europe, asia, eurasia, oceania, old-world)
+  - ✓ All map IDs unique
+  - ✓ All have id, name, file, bbox, hexBudget
+  - ✓ World map bbox is [-180, -90, 180, 90]
+  - ✓ All file names follow `{id}.worldmap.json`
+  - ✓ All bbox: lonMin < lonMax, latMin < latMax
+  - ✓ All hexBudget positive and ≤ 64,000
+  - ✓ Picker renders all 10 maps as options
+  - ✓ Manifest fully data-driven
+- **Blockers**: None. All tests pass.
+- **Verdict**: **ALL PASS ✓** — WS5 implementation fully functional and ready for code review.
+- **Log Written**: yes

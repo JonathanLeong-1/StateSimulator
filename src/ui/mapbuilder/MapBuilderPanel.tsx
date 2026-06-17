@@ -1,9 +1,22 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useMapBuilder } from './MapBuilderContext';
 import { TERRAIN_COLORS } from '../../renderer/MapModes';
 import { gridForBudget, MIN_DIM, MAX_HEX_BUDGET } from '../../geo/dimensionSolver';
 import type { WorldData } from '../../types/world';
 import styles from './MapBuilderPanel.module.css';
+
+interface DefaultMapMeta {
+  id: string;
+  name: string;
+  file: string;
+  bbox: { lonMin: number; latMin: number; lonMax: number; latMax: number };
+  hexBudget: number;
+}
+
+interface DefaultMapsManifest {
+  version: number;
+  maps: DefaultMapMeta[];
+}
 
 const BIOME_LEGEND = [
   { terrain: 'river_valley', label: 'River Valley', productivity: '~0.93' },
@@ -33,12 +46,52 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
   const widthInputRef = useRef<HTMLInputElement>(null);
   const heightInputRef = useRef<HTMLInputElement>(null);
 
+  const [defaultMaps, setDefaultMaps] = useState<DefaultMapMeta[]>([]);
+  const [isLoadingMap, setIsLoadingMap] = useState(false);
+  const [selectedMapId, setSelectedMapId] = useState<string>('');
+
+  // Fetch the default maps manifest on mount
+  useEffect(() => {
+    const loadManifest = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.BASE_URL}defaultMaps.json`);
+        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        const manifest: DefaultMapsManifest = await response.json();
+        setDefaultMaps(manifest.maps || []);
+      } catch (err) {
+        console.error('Failed to load default maps manifest:', err);
+      }
+    };
+    loadManifest();
+  }, []);
+
   const handleFileLoad = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => ctx.loadMap(ev.target?.result as string);
     reader.readAsText(file);
+  };
+
+  const handleSelectDefaultMap = async (mapId: string) => {
+    if (!mapId) {
+      setSelectedMapId('');
+      return;
+    }
+
+    setSelectedMapId(mapId);
+    setIsLoadingMap(true);
+    try {
+      const response = await fetch(`${import.meta.env.BASE_URL}maps/${mapId}.worldmap.json`);
+      if (!response.ok) throw new Error(`Failed to fetch map: ${response.status}`);
+      const json = await response.text();
+      ctx.loadMap(json);
+    } catch (err) {
+      console.error(`Failed to load map ${mapId}:`, err);
+      setSelectedMapId('');
+    } finally {
+      setIsLoadingMap(false);
+    }
   };
 
   const applyCustomSize = () => {
@@ -64,9 +117,29 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
       <div className={styles.section}>
         <div className={styles.sectionLabel}>GENERATE</div>
         <button className={styles.btn} onClick={ctx.generateRandomContinents}>🎲 Random Continents</button>
-        <button className={styles.btn} onClick={ctx.loadEurasia}>🗺 Eurasia</button>
         <button className={styles.btn} onClick={ctx.clearMap}>🗑 Clear Map</button>
       </div>
+
+      {/* Default Maps Picker */}
+      {defaultMaps.length > 0 && (
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>DEFAULT MAPS</div>
+          <select
+            className={styles.mapSelect}
+            value={selectedMapId}
+            onChange={e => handleSelectDefaultMap(e.target.value)}
+            disabled={isLoadingMap}
+          >
+            <option value="">-- Select a map --</option>
+            {defaultMaps.map(map => (
+              <option key={map.id} value={map.id}>
+                {map.name}
+              </option>
+            ))}
+          </select>
+          {isLoadingMap && <div className={styles.loadingText}>Loading map...</div>}
+        </div>
+      )}
 
       {/* Map Size */}
       <div className={styles.section}>

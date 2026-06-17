@@ -191,3 +191,12 @@ npm run typecheck:test   # type-checks *.test.ts + GeoDataset.node.ts (tsconfig.
 ```
 
 The app's own `tsconfig.app.json` covers the browser-safe core.
+
+## Default maps integration
+
+The 10 pre-built regional maps defined in `defaultMaps.ts` are:
+1. **Generated offline** by `scripts/generate-default-maps.ts` (Node), which calls `rasterizeRegion` for each region and writes the output to `public/maps/<id>.worldmap.json`
+2. **Bundled** as metadata in `public/defaultMaps.json` (manifest listing name, file path, bbox, and hex budget per map)
+3. **Loaded by users** via the "Load Default Map" dropdown in the Map Builder UI, which fetches the manifest and allows users to pick and load any of the 10 pre-baked worlds for customization
+
+No additional code is needed to add a new default map — simply add an entry to `DEFAULT_MAPS` in `defaultMaps.ts`, re-run the build script, and the manifest and picker UI update automatically.
