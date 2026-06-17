@@ -18,7 +18,15 @@ export const MAX_HEX_BUDGET = 64_000;
 export const MIN_HEX_BUDGET = 4_000;
 
 /** Minimum grid dimension in either axis. */
-const MIN_DIM = 8;
+export const MIN_DIM = 8;
+
+/**
+ * Default grid aspect (width:height) used when deriving a blank rectangular map
+ * from a hex budget (presets, blank-map fallbacks). Unlike `solveDimensions`,
+ * this targets the *grid* aspect directly (no hex packing factor), so a budget
+ * of 16k yields the classic 160×100 grid.
+ */
+export const DEFAULT_GRID_ASPECT = 1.6;
 
 /**
  * Hex packing factor relating projected aspect to grid aspect.
@@ -132,3 +140,25 @@ export function clampHexBudget(budget: number): number {
   if (!Number.isFinite(budget)) return DEFAULT_HEX_BUDGET;
   return Math.min(MAX_HEX_BUDGET, Math.max(MIN_HEX_BUDGET, Math.round(budget)));
 }
+
+/**
+ * Derive a blank rectangular grid (width·height ≈ budget) at a target *grid*
+ * aspect. Used by the Map Builder size presets and procedural fallbacks. The
+ * budget is clamped to `[MIN_HEX_BUDGET, MAX_HEX_BUDGET]`; both dimensions are
+ * clamped to at least `MIN_DIM`. A budget of 16k at the default 1.6 aspect
+ * reproduces the classic 160×100 grid.
+ */
+export function gridForBudget(budget: number, gridAspect = DEFAULT_GRID_ASPECT): GridDimensions {
+  const n = clampHexBudget(budget);
+  const a = gridAspect > 0 && Number.isFinite(gridAspect) ? gridAspect : DEFAULT_GRID_ASPECT;
+  const height = Math.max(MIN_DIM, Math.round(Math.sqrt(n / a)));
+  const width = Math.max(MIN_DIM, Math.round(a * height));
+  return { width, height };
+}
+
+/**
+ * Default blank-map grid (Small preset, ≈16k hexes → 160×100). Shared by the
+ * Map Builder initial state and the procedural circle/continent generators so
+ * the default size is sourced from one named constant rather than magic numbers.
+ */
+export const DEFAULT_GRID: GridDimensions = gridForBudget(16_000);

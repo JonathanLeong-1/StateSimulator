@@ -23,7 +23,7 @@ Inspired by research on state formation and territorial consolidation.
 - **4 map modes** — Political, Terrain, Productivity, Obstacle
 - **Full controls** — Adjustable conflict rate, secession rate, geography difficulty, and more
 - **Save/Load** — Export simulation state to JSON and restore it
-- **Map Builder** — Paint custom hex worlds from scratch using paint tools, biome selector, and procedural continent generation, then launch the simulation directly on your creation
+- **Map Builder** — Paint custom hex worlds from scratch using paint tools, biome selector, and procedural continent generation, then launch the simulation directly on your creation. Choose the map size up front — pick a preset (Small ~16k, Medium ~40k, Large ~64k hexes) or enter custom dimensions — and the simulation renders and runs at whatever size you build
 
 ## Quick Start
 
@@ -79,6 +79,22 @@ This repository publishes the built Vite app through GitHub Pages Actions.
 
 The Map Builder lets you design a custom world before running the simulation on it. Click **🗺 Map Builder** in the header to enter the mode.
 
+### Map Size
+
+Choose how large your world is before you start painting. Grid dimensions are no longer fixed — maps of any size render and simulate.
+
+| Preset | Hex budget | Grid |
+|--------|-----------|------|
+| **Small** (default) | ~16,000 hexes | 160 × 100 |
+| **Medium** | ~40,000 hexes | ~253 × 158 |
+| **Large** | ~64,000 hexes | ~320 × 200 |
+
+Prefer your own shape? Enter a custom **width × height** and click **Apply**. The total hex count is clamped to a maximum of **64,000 hexes** (the validated high-detail cap); oversized inputs are scaled down to fit. The current size is shown as `width × height (~Nk hexes)` above the presets.
+
+> **Changing size starts a fresh blank map** — switching presets or applying custom dimensions clears the canvas (and undo history), so pick your size before investing time in painting.
+>
+> **Performance note:** larger maps cost more per simulation step. A full 64,000-tile map runs at roughly 31 ms/step (~32 steps/second); smaller maps step faster. Choose a size that matches the scale of the world you want and your machine's comfort level.
+
 ### Pan & Zoom
 
 Both the simulation view and the Map Builder canvas support free pan and zoom:
@@ -128,7 +144,7 @@ Choose from 7 land terrain types — Plains, River Valley, Forest, Hills, Desert
 ### Workflow
 
 1. Click **🗺 Map Builder** in the header.
-2. Start with a blank ocean grid (160 × 100 hexes) or click **Random Continents** for a procedurally generated starting point.
+2. Pick a **map size** — keep the default Small preset (160 × 100), choose Medium/Large, or enter custom dimensions. Then start from the blank ocean grid or click **Random Continents** for a procedurally generated starting point.
 3. Select a paint tool and biome, then click or drag to paint tiles.
 4. Use **Save Map** to preserve your work; use **Load Map** to restore it later.
 5. Click **▶ Run Simulation on This Map** to hand the world to the simulator and watch it play out.

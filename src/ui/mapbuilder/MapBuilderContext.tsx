@@ -4,6 +4,7 @@ import type { TerrainType } from '../../types/world';
 import type { WorldData } from '../../types/world';
 import { WorldGenerator } from '../../simulation/WorldGenerator';
 import { mulberry32 } from '../../simulation/rng';
+import { DEFAULT_GRID, MAX_HEX_BUDGET, MIN_DIM } from '../../geo/dimensionSolver';
 
 const LAND_BIOMES: TerrainType[] = ['plains', 'hills', 'forest', 'desert', 'tundra', 'river_valley', 'mountains'];
 
@@ -15,9 +16,6 @@ function makeInitialTiles(width: number, height: number): MapBuilderTile[] {
   return tiles;
 }
 
-const WIDTH = 160;
-const HEIGHT = 100;
-
 interface MapBuilderContextValue {
   state: MapBuilderState;
   applyBrush: (centerIdx: number) => void;
@@ -28,6 +26,7 @@ interface MapBuilderContextValue {
   setProductivityValue: (val: number) => void;
   setRandomEnabled: (enabled: boolean) => void;
   setName: (name: string) => void;
+  setDimensions: (width: number, height: number) => void;
   generateRandomContinents: () => void;
   clearMap: () => void;
   saveMap: () => void;
@@ -48,9 +47,9 @@ export function useMapBuilder(): MapBuilderContextValue {
 
 export function MapBuilderProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<MapBuilderState>({
-    tiles: makeInitialTiles(WIDTH, HEIGHT),
-    width: WIDTH,
-    height: HEIGHT,
+    tiles: makeInitialTiles(DEFAULT_GRID.width, DEFAULT_GRID.height),
+    width: DEFAULT_GRID.width,
+    height: DEFAULT_GRID.height,
     tool: 'paint-land',
     brushSize: 2,
     selectedBiome: 'plains',
@@ -156,6 +155,25 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
   const setProductivityValue = useCallback((productivityValue: number) => setState(p => ({ ...p, productivityValue })), []);
   const setRandomEnabled = useCallback((randomEnabled: boolean) => setState(p => ({ ...p, randomEnabled })), []);
   const setName = useCallback((name: string) => setState(p => ({ ...p, name })), []);
+
+  const setDimensions = useCallback((width: number, height: number) => {
+    // Clamp each axis to at least MIN_DIM, then shrink proportionally so the
+    // total never exceeds the validated hex budget cap.
+    let w = Math.max(MIN_DIM, Math.round(width) || MIN_DIM);
+    let h = Math.max(MIN_DIM, Math.round(height) || MIN_DIM);
+    if (w * h > MAX_HEX_BUDGET) {
+      const scale = Math.sqrt(MAX_HEX_BUDGET / (w * h));
+      w = Math.max(MIN_DIM, Math.floor(w * scale));
+      h = Math.max(MIN_DIM, Math.floor(h * scale));
+    }
+    setState(prev => {
+      if (w === prev.width && h === prev.height) return prev;
+      // New size discards content: reset history and start from a blank map.
+      historyRef.current = [];
+      historyIndexRef.current = -1;
+      return { ...prev, width: w, height: h, tiles: makeInitialTiles(w, h), isDirty: true };
+    });
+  }, []);
 
   const generateRandomContinents = useCallback(() => {
     setState(prev => {
@@ -282,7 +300,7 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
 
   const value: MapBuilderContextValue = {
     state, applyBrush, beginStroke, setTool, setBrushSize, setSelectedBiome,
-    setProductivityValue, setRandomEnabled, setName,
+    setProductivityValue, setRandomEnabled, setName, setDimensions,
     generateRandomContinents, clearMap, saveMap, loadMap, loadEurasia,
     undo, redo, convertToWorldData,
   };

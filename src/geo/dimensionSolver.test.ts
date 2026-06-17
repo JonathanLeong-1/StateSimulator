@@ -4,10 +4,14 @@ import {
   projectedExtent,
   solveDimensionsForBbox,
   clampHexBudget,
+  gridForBudget,
   HEX_ASPECT_FACTOR,
   DEFAULT_HEX_BUDGET,
+  DEFAULT_GRID,
+  DEFAULT_GRID_ASPECT,
   MAX_HEX_BUDGET,
   MIN_HEX_BUDGET,
+  MIN_DIM,
 } from './dimensionSolver';
 
 const SQRT3 = Math.sqrt(3);
@@ -137,5 +141,46 @@ describe('clampHexBudget', () => {
 
   it('should fall back to the default for a non-finite budget', () => {
     expect(clampHexBudget(Number.NaN)).toBe(DEFAULT_HEX_BUDGET);
+  });
+});
+
+describe('gridForBudget', () => {
+  it('reproduces the classic 160×100 grid for a 16k budget at default aspect', () => {
+    expect(gridForBudget(16_000)).toEqual({ width: 160, height: 100 });
+  });
+
+  it('keeps width·height within ±5% of the (clamped) budget', () => {
+    for (const budget of [16_000, DEFAULT_HEX_BUDGET, MAX_HEX_BUDGET]) {
+      const { width, height } = gridForBudget(budget);
+      const product = width * height;
+      expect(product).toBeGreaterThan(budget * 0.95);
+      expect(product).toBeLessThan(budget * 1.05);
+    }
+  });
+
+  it('produces a grid aspect near the requested grid aspect', () => {
+    const { width, height } = gridForBudget(DEFAULT_HEX_BUDGET);
+    expect(width / height).toBeCloseTo(DEFAULT_GRID_ASPECT, 1);
+  });
+
+  it('clamps an over-budget request down to MAX_HEX_BUDGET', () => {
+    const { width, height } = gridForBudget(1_000_000);
+    expect(width * height).toBeLessThanOrEqual(MAX_HEX_BUDGET * 1.05);
+  });
+
+  it('clamps both dimensions to at least MIN_DIM for a tiny budget', () => {
+    const { width, height } = gridForBudget(1, 100);
+    expect(width).toBeGreaterThanOrEqual(MIN_DIM);
+    expect(height).toBeGreaterThanOrEqual(MIN_DIM);
+  });
+});
+
+describe('DEFAULT_GRID', () => {
+  it('is the 160×100 Small-preset grid', () => {
+    expect(DEFAULT_GRID).toEqual({ width: 160, height: 100 });
+  });
+
+  it('exports MIN_DIM = 8', () => {
+    expect(MIN_DIM).toBe(8);
   });
 });

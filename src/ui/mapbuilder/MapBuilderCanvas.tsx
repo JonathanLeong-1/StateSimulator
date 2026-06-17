@@ -17,19 +17,21 @@ export function MapBuilderCanvas() {
   const isSpacePanRef = useRef(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
 
-  // Initialize renderer
+  // Initialize renderer — re-instantiate when grid dimensions change so a
+  // differently-sized loaded/generated map renders with correct hex sizing
+  // instead of a stale (e.g. 160×100) layout.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     canvas.width = canvas.offsetWidth || 800;
     canvas.height = canvas.offsetHeight || 600;
     rendererRef.current = new MapBuilderRenderer(canvas, ctx.state.width, ctx.state.height);
-    // Initial layout — fit tiles to view once on mount
+    // Initial layout — fit tiles to view for the current dimensions
     rendererRef.current.setTiles(ctx.state.tiles);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ctx.state.width, ctx.state.height]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // RAF render loop
   useEffect(() => {

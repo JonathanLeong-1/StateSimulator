@@ -105,3 +105,25 @@
 - **Fixes Applied**: None to app code (tester scope). Corrected one over-specified assertion in my own new test: the lone synthetic island classifies as `hills` (steep land→ocean TRI), not `forest` — verified-correct behavior, so assertion relaxed to "non-ocean land biome".
 - **Lessons Learned**: A single isolated land cell adjacent to deep ocean triggers the TRI/relief branch (large local elevation range) → hills/mountains before the Köppen biome step. Histograms via console.log only surface with `--disableConsoleIntercept`. No cosmetic post-processing confirmed by code inspection (each hex classified independently, serialized directly — no neighbour smoothing pass) AND empirically (isolated island preserved).
 - **Status**: done — Verdict ALL PASS (187 tests, 15 files; tsc test typecheck exit 0; build exit 0)
+
+## 2026-06-16 23:16:38 — Session Summary
+- **Plan**: `.plans/project/2026-06-16-162511-architecture-real-world-maps.md` (§4, §8) / launch plan `2026-06-16-162511-launch-plan-real-world-maps.md`
+- **Branch**: `feature/mapbuilder/variable-grid`
+- **Commit**: `ff1969c`
+- **Tasks Completed** (Gate 3 — WS3 Variable Grid Support):
+  - Read architecture §4/§8, dimensionSolver.ts, MapBuilderContext.tsx, MapBuilderCanvas.tsx, SimulationContext.tsx, WorldGenerator.ts and all WS3 test files.
+  - Strengthened `setDimensions` tests: aspect-preserving over-budget shrink (400×200 ⇒ ~2:1, ≤64k), and undo-history-reset on resize (prior stroke un-undoable, map stays blank).
+  - Strengthened WorldGenerator: structural-validity test at a non-1.6 (square) 120×120 aspect (neighbors in-range, coastal⇒ocean-neighbor, continents on land); fromCustomMap structural validity at 80×60/200×120/120×120.
+  - Added `src/SimulationContext.test.tsx` (area #4): renders SimulationProvider, exercises buildCircleWorld (mount fallback + resetSim) and randomizeContinents at DEFAULT_GRID — valid WorldData, land present, dims=160×100, ocean continent=null.
+  - Added MapBuilderCanvas renderer-rebuild tests: constructor receives current dims on mount, re-instantiates on width/height change, no rebuild when dims unchanged.
+  - Ran the 64k perf test independently and recorded numbers.
+- **Files Changed**:
+  - `src/ui/mapbuilder/MapBuilderContext.test.tsx` (extended)
+  - `src/simulation/WorldGenerator.test.ts` (extended; fixed `as const` on conditional ⇒ per-branch const)
+  - `src/ui/mapbuilder/MapBuilderCanvas.test.tsx` (refactored mocks: mutable state + renderer construction tracking; +3 tests)
+  - `src/SimulationContext.test.tsx` (new)
+- **Fixes Applied**: Removed an over-strict assertion (every land tile non-null continent) — `fromCustomMap` intentionally assigns continent ids only to the two largest landmasses (`ci < 2 ? ci : null`); smaller blobs are null by design. Fixed a `tsc` TS1355 error: `as const` cannot apply to a conditional — switched to per-branch `as const`.
+- **Performance (§8, 64k cap)**: 64k world (320×200=64000): gen+init **165 ms**, 50 `engine.step()` = **1553 ms** → **31.1 ms/step** (~32 steps/s). Completes far under the 30 s generous ceiling. Verdict: 64k MAX_HEX_BUDGET is acceptable for this turn/interval-driven sim (steps are user- or timer-paced, not real-time). Cap left unchanged (architect's call). Single run on dev machine; CI may vary.
+- **Results**: full `npm test` = **212 passed (18 files)** (baseline 202; +10 new). `npm run build` exit **0**. `tsc -p tsconfig.test.json --noEmit` exit **0**. Lint = **25** (unchanged baseline; no net new).
+- **Lessons Learned**: `fromCustomMap` only tracks the top-2 continents — don't assert all land has a continent. `as const` cannot wrap a ternary; apply per-branch. For dim-keyed renderer effects, track constructor args via a module-scoped array + mutable mock state to assert rebuild behavior.
+- **Status**: done

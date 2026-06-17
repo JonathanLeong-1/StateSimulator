@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { useMapBuilder } from './MapBuilderContext';
 import { TERRAIN_COLORS } from '../../renderer/MapModes';
+import { gridForBudget, MIN_DIM, MAX_HEX_BUDGET } from '../../geo/dimensionSolver';
 import type { WorldData } from '../../types/world';
 import styles from './MapBuilderPanel.module.css';
 
@@ -15,6 +16,12 @@ const BIOME_LEGEND = [
   { terrain: 'ocean',        label: 'Ocean',        productivity: 'impassable' },
 ] as const;
 
+const SIZE_PRESETS = [
+  { label: 'Small', budget: 16_000 },
+  { label: 'Medium', budget: 40_000 },
+  { label: 'Large', budget: MAX_HEX_BUDGET },
+] as const;
+
 interface Props {
   onRunSimulation: (worldData: WorldData) => void;
 }
@@ -23,6 +30,8 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
   const ctx = useMapBuilder();
   const { state } = ctx;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const widthInputRef = useRef<HTMLInputElement>(null);
+  const heightInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileLoad = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -30,6 +39,12 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
     const reader = new FileReader();
     reader.onload = ev => ctx.loadMap(ev.target?.result as string);
     reader.readAsText(file);
+  };
+
+  const applyCustomSize = () => {
+    const w = Number(widthInputRef.current?.value);
+    const h = Number(heightInputRef.current?.value);
+    if (w > 0 && h > 0) ctx.setDimensions(w, h);
   };
 
   return (
@@ -51,6 +66,52 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
         <button className={styles.btn} onClick={ctx.generateRandomContinents}>🎲 Random Continents</button>
         <button className={styles.btn} onClick={ctx.loadEurasia}>🗺 Eurasia</button>
         <button className={styles.btn} onClick={ctx.clearMap}>🗑 Clear Map</button>
+      </div>
+
+      {/* Map Size */}
+      <div className={styles.section}>
+        <div className={styles.sectionLabel}>
+          MAP SIZE · {state.width}×{state.height} (~{Math.round((state.width * state.height) / 1000)}k hexes)
+        </div>
+        <div className={styles.toolGrid}>
+          {SIZE_PRESETS.map(preset => {
+            const dims = gridForBudget(preset.budget);
+            const active = state.width === dims.width && state.height === dims.height;
+            return (
+              <button
+                key={preset.label}
+                className={`${styles.toolBtn} ${active ? styles.toolBtnActive : ''}`}
+                title={`${dims.width}×${dims.height} (~${Math.round(preset.budget / 1000)}k hexes)`}
+                onClick={() => ctx.setDimensions(dims.width, dims.height)}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className={styles.sizeRow}>
+          <input
+            ref={widthInputRef}
+            key={`w-${state.width}`}
+            className={styles.sizeInput}
+            type="number"
+            min={MIN_DIM}
+            defaultValue={state.width}
+            aria-label="Map width"
+          />
+          <span className={styles.sizeTimes}>×</span>
+          <input
+            ref={heightInputRef}
+            key={`h-${state.height}`}
+            className={styles.sizeInput}
+            type="number"
+            min={MIN_DIM}
+            defaultValue={state.height}
+            aria-label="Map height"
+          />
+          <button className={styles.btn} onClick={applyCustomSize}>Apply</button>
+        </div>
+        <div className={styles.sizeHint}>Changing size starts a new blank map (max {Math.round(MAX_HEX_BUDGET / 1000)}k hexes).</div>
       </div>
 
       {/* Tools */}

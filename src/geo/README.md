@@ -44,7 +44,7 @@ pipeline with **no engine changes**.
 | File | Responsibility |
 |------|----------------|
 | [`EqualEarth.ts`](EqualEarth.ts) | Equal Earth forward/inverse projection (pure math, §3). |
-| [`dimensionSolver.ts`](dimensionSolver.ts) | Bounding box + hex budget → variable `{ width, height }` (§4). |
+| [`dimensionSolver.ts`](dimensionSolver.ts) | Bounding box + hex budget → variable `{ width, height }` (§4). Also exports `gridForBudget`/`DEFAULT_GRID`, which back the Map Builder's blank-map size presets (Small/Medium/Large). |
 | [`GeoDataset.ts`](GeoDataset.ts) | Environment-agnostic geodata sampling (elevation / Köppen / land / rivers) over in-memory buffers. |
 | [`GeoDataset.node.ts`](GeoDataset.node.ts) | **Node-only** `fs` loader for tests and the build script. The browser uses a `fetch` loader (lands in WS4); the core never imports this file. |
 | [`koppen.ts`](koppen.ts) | Köppen–Geiger class code → biome `TerrainType` (§6.1). |

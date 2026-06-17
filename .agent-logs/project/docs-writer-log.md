@@ -82,3 +82,17 @@
 - **Root README touched**: No — Real-World Map UI not shipped (WS4/WS5); deferred per delegation
 - **Lessons Learned**: The §7.1 architecture snippet shows rasterizeRegion(bbox, width, height, opts) but the implemented + §7-prose signature is (bbox, dataset, opts); documented the actual shipped signature. Verify config/script names against package.json before citing them in docs.
 - **Status**: done
+
+## 2026-06-16 23:23:47 — Session Summary (Gate 5 WS3 Variable Grid / Size Selector Docs)
+- **Plan**: .plans/project/2026-06-16-162511-architecture-real-world-maps.md (§4/§8, READ-ONLY); launch-plan WS3
+- **Branch**: feature/mapbuilder/variable-grid
+- **Commit**: ff1969c
+- **Tasks Completed**:
+  - Updated root README.md Map Builder section — added a new "### Map Size" subsection documenting the size selector: Small (~16k, 160×100), Medium (~40k, ~253×158), Large (~64k, ~320×200) presets plus custom width×height input, the 64,000-hex cap, that changing size starts a fresh blank map, and a brief perf note (64k ≈ 31 ms/step / ~32 steps/s)
+  - Verified preset→grid numbers against gridForBudget() (aspect 1.6): 40k→253×158, 64k→320×200, 16k→160×100
+  - Updated Map Builder feature bullet and Workflow step 2 to mention choosing map size up front; default remains Small (160×100)
+  - Added one-line cross-reference in src/geo/README.md module-map row noting gridForBudget/DEFAULT_GRID back the Map Builder size presets
+- **Files Changed**: README.md, src/geo/README.md
+- **Did NOT document**: the unreleased real-world map import / region-picker UI (WS4/WS5) — only the variable-grid/size-selector capability shipped in WS3
+- **Lessons Learned**: Read the actual UI component (MapBuilderPanel SIZE_PRESETS) and solver (gridForBudget) rather than trusting brief-stated dimensions — the custom input is per-axis with the total clamped to the 64k budget, which differs from the budget-floor framing. Verified all cited grid dimensions by computing gridForBudget.
+- **Status**: done
