@@ -41,7 +41,7 @@ export interface RasterizeOptions {
 
 /** Default local-relief thresholds (metres). */
 const DEFAULT_MOUNTAIN_THRESHOLD = 1500;
-const DEFAULT_HILL_THRESHOLD = 200;
+const DEFAULT_HILL_THRESHOLD = 600;
 
 /** Floor for the relief-sampling neighbourhood so it spans ≥ one source cell. */
 const MIN_RELIEF_DELTA_DEG = 0.15;
@@ -107,11 +107,12 @@ export async function rasterizeRegion(
         for (let si = 0; si < k; si++) {
           const sx = cx + ((si + 0.5) / k - 0.5) * cellW;
           const sy = cy + ((sj + 0.5) / k - 0.5) * cellH;
-          // Clamp to projected bounds before inverse() to prevent NaN/Infinity
-          // lon/lat at the poles (Equal Earth polar singularity).
-          const sxClamped = Math.min(maxX, Math.max(minX, sx));
-          const syClamped = Math.min(maxY, Math.max(minY, sy));
-          const ll = inverse(sxClamped, syClamped);
+          // Skip supersamples that fall outside the projected bbox — clamping
+          // them to the boundary would map every out-of-bounds sample to the
+          // pole (inverse(x, maxY) = ±90°), which hits the ETOPO polar-ice
+          // row and votes land for the entire top/bottom hex row.
+          if (sx < minX || sx > maxX || sy < minY || sy > maxY) continue;
+          const ll = inverse(sx, sy);
           const lon = ll.lonRad * (180 / Math.PI);
           const lat = ll.latRad * (180 / Math.PI);
           total++;

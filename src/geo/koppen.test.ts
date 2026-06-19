@@ -28,7 +28,7 @@ describe('koppenToBiome', () => {
     [1, 'forest'], // Af tropical rainforest
     [3, 'forest'], // Aw tropical savannah
     [4, 'desert'], // BWh arid desert hot
-    [6, 'desert'], // BSh arid steppe hot
+    [6, 'plains'], // BSh semi-arid steppe hot → plains
     [8, 'plains'], // Csa Mediterranean
     [10, 'plains'], // Csc Mediterranean
     [14, 'forest'], // Cfa temperate no dry season
@@ -55,11 +55,11 @@ describe('koppenToBiome', () => {
   });
 
   // Full contract: the exact terrain every legend code (1..30) must map to.
-  // tropical/humid-temperate → forest; B-group → desert; Cs* (Mediterranean) →
-  // plains; E-group + sparse subarctic (Dfc/Dfd/Dwd) → tundra.
+  // tropical/humid-temperate → forest; BWh/BWk → desert; BSh/BSk (steppe) → plains;
+  // Cs* (Mediterranean) → plains; E-group + sparse subarctic (Dfc/Dfd/Dwd) → tundra.
   const EXPECTED: Record<number, TerrainType> = {
     1: 'forest', 2: 'forest', 3: 'forest', // A tropical
-    4: 'desert', 5: 'desert', 6: 'desert', 7: 'desert', // B arid
+    4: 'desert', 5: 'desert', 6: 'plains', 7: 'plains', // B arid/steppe
     8: 'plains', 9: 'plains', 10: 'plains', // Cs Mediterranean
     11: 'forest', 12: 'forest', 13: 'forest', // Cw
     14: 'forest', 15: 'forest', 16: 'forest', // Cf

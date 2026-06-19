@@ -42,8 +42,11 @@ const SUBARCTIC_TUNDRA_CODES: ReadonlySet<number> = new Set([24, 27, 28]); // Dw
 /** Polar codes → `tundra`. */
 const POLAR_CODES: ReadonlySet<number> = new Set([29, 30]); // ET, EF
 
-/** Arid codes → `desert`. */
-const ARID_CODES: ReadonlySet<number> = new Set([4, 5, 6, 7]); // BWh, BWk, BSh, BSk
+/** True-desert (hyper-arid/arid) codes → `desert`. */
+const ARID_CODES: ReadonlySet<number> = new Set([4, 5]); // BWh, BWk
+
+/** Semi-arid steppe codes → `plains` (Great Plains, Central Asian steppe, Sahel, Patagonia). */
+const STEPPE_CODES: ReadonlySet<number> = new Set([6, 7]); // BSh, BSk
 
 /** Mediterranean (Cs*) codes → `plains`. */
 const MEDITERRANEAN_CODES: ReadonlySet<number> = new Set([8, 9, 10]); // Csa, Csb, Csc
@@ -60,6 +63,7 @@ export function koppenToBiome(code: number): TerrainType {
   if (POLAR_CODES.has(code)) return 'tundra';
   if (SUBARCTIC_TUNDRA_CODES.has(code)) return 'tundra';
   if (ARID_CODES.has(code)) return 'desert';
+  if (STEPPE_CODES.has(code)) return 'plains';
   if (MEDITERRANEAN_CODES.has(code)) return 'plains';
 
   // Tropical (A: 1–3) and humid/temperate forest (Cf*, Cw*, Df*, Dw*, Ds*):
