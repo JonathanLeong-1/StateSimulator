@@ -18,6 +18,9 @@ export interface DefaultMapDef {
   bbox: BoundingBox;
   /** Optional per-map hex budget override (else DEFAULT_HEX_BUDGET). */
   hexBudget?: number;
+  /** Optional explicit grid dimensions. When set, bypasses solveDimensions
+   *  so the output preserves the manually-trimmed aspect ratio at ~64k hexes. */
+  dimensions?: { width: number; height: number };
 }
 
 export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
@@ -25,11 +28,13 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
     id: 'world',
     name: 'World',
     bbox: { lonMin: -180, latMin: -90, lonMax: 180, latMax: 90 },
+    dimensions: { width: 348, height: 183 },
   },
   {
     id: 'north-america',
     name: 'North America',
     bbox: { lonMin: -170, latMin: 7, lonMax: -52, latMax: 84 },
+    dimensions: { width: 302, height: 211 },
   },
   {
     id: 'south-america',
@@ -40,36 +45,43 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
     id: 'americas',
     name: 'Americas',
     bbox: { lonMin: -170, latMin: -56, lonMax: -34, latMax: 84 },
+    dimensions: { width: 222, height: 287 },
   },
   {
     id: 'africa',
     name: 'Africa',
     bbox: { lonMin: -19, latMin: -35, lonMax: 52, latMax: 38 },
+    dimensions: { width: 235, height: 272 },
   },
   {
     id: 'europe',
     name: 'Europe',
     bbox: { lonMin: -25, latMin: 34, lonMax: 45, latMax: 72 },
+    dimensions: { width: 343, height: 186 },
   },
   {
     id: 'asia',
     name: 'Asia',
     bbox: { lonMin: 25, latMin: -11, lonMax: 180, latMax: 78 },
+    dimensions: { width: 313, height: 205 },
   },
   {
     id: 'eurasia',
     name: 'Eurasia',
     bbox: { lonMin: -25, latMin: -11, lonMax: 170, latMax: 78 },
+    dimensions: { width: 356, height: 181 },
   },
   {
     id: 'oceania',
     name: 'Oceania',
     bbox: { lonMin: 110, latMin: -48, lonMax: 180, latMax: -10 },
+    dimensions: { width: 299, height: 214 },
   },
   {
     id: 'old-world',
     name: 'Old World',
     bbox: { lonMin: -25, latMin: -35, lonMax: 170, latMax: 78 },
+    dimensions: { width: 296, height: 217 },
   },
 ] as const;
 

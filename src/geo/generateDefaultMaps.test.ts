@@ -211,9 +211,9 @@ describe('Generate Default Maps — Integration Test', () => {
     }
   });
 
-  it('should have all maps with approximately 40k ± 5% tiles (hex budget)', () => {
+  it('should have all maps with approximately 64k ± 5% tiles (hex budget)', () => {
     const tolerance = 0.05; // ±5%
-    const target = 40000;
+    const target = 64000;
     const min = target * (1 - tolerance);
     const max = target * (1 + tolerance);
 

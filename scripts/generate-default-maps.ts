@@ -73,6 +73,7 @@ async function main(): Promise<void> {
       const map = await rasterizeRegion(region.bbox, dataset, {
         name: region.name,
         hexBudget,
+        dimensions: region.dimensions,
       });
 
       // Serialize to SavedCustomMap format.
