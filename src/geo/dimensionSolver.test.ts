@@ -61,8 +61,8 @@ describe('solveDimensions', () => {
   });
 
   it('should export the documented budget constants', () => {
-    expect(DEFAULT_HEX_BUDGET).toBe(40_000);
-    expect(MAX_HEX_BUDGET).toBe(64_000);
+    expect(DEFAULT_HEX_BUDGET).toBe(64_000);
+    expect(MAX_HEX_BUDGET).toBe(80_000);
     expect(MIN_HEX_BUDGET).toBe(4_000);
   });
 });

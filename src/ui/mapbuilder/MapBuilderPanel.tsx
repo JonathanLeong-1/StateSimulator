@@ -47,6 +47,10 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const widthInputRef = useRef<HTMLInputElement>(null);
   const heightInputRef = useRef<HTMLInputElement>(null);
+  const trimTopRef = useRef<HTMLInputElement>(null);
+  const trimBottomRef = useRef<HTMLInputElement>(null);
+  const trimLeftRef = useRef<HTMLInputElement>(null);
+  const trimRightRef = useRef<HTMLInputElement>(null);
 
   const [defaultMaps, setDefaultMaps] = useState<DefaultMapMeta[]>([]);
   const [isLoadingMap, setIsLoadingMap] = useState(false);
@@ -108,6 +112,20 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
     const w = Number(widthInputRef.current?.value);
     const h = Number(heightInputRef.current?.value);
     if (w > 0 && h > 0) ctx.setDimensions(w, h);
+  };
+
+  const applyTrim = () => {
+    const top = Math.max(0, Number(trimTopRef.current?.value) || 0);
+    const bottom = Math.max(0, Number(trimBottomRef.current?.value) || 0);
+    const left = Math.max(0, Number(trimLeftRef.current?.value) || 0);
+    const right = Math.max(0, Number(trimRightRef.current?.value) || 0);
+    if (top + bottom + left + right === 0) return;
+    ctx.trimEdges(top, bottom, left, right);
+    // Reset trim inputs after applying
+    if (trimTopRef.current) trimTopRef.current.value = '0';
+    if (trimBottomRef.current) trimBottomRef.current.value = '0';
+    if (trimLeftRef.current) trimLeftRef.current.value = '0';
+    if (trimRightRef.current) trimRightRef.current.value = '0';
   };
 
   return (
@@ -222,6 +240,22 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
               <button className={styles.btn} onClick={applyCustomSize}>Apply</button>
             </div>
             <div className={styles.sizeHint}>Changing size starts a new blank map (max {Math.round(MAX_HEX_BUDGET / 1000)}k hexes).</div>
+          </div>
+
+          {/* Trim Edges */}
+          <div className={styles.section}>
+            <div className={styles.sectionLabel}>TRIM EDGES (rows / cols)</div>
+            <div className={styles.trimGrid}>
+              <label className={styles.trimLabel}>Top</label>
+              <input ref={trimTopRef} className={styles.sizeInput} type="number" min={0} defaultValue={0} aria-label="Trim top rows" />
+              <label className={styles.trimLabel}>Bottom</label>
+              <input ref={trimBottomRef} className={styles.sizeInput} type="number" min={0} defaultValue={0} aria-label="Trim bottom rows" />
+              <label className={styles.trimLabel}>Left</label>
+              <input ref={trimLeftRef} className={styles.sizeInput} type="number" min={0} defaultValue={0} aria-label="Trim left cols" />
+              <label className={styles.trimLabel}>Right</label>
+              <input ref={trimRightRef} className={styles.sizeInput} type="number" min={0} defaultValue={0} aria-label="Trim right cols" />
+            </div>
+            <button className={styles.btn} onClick={applyTrim}>✂ Trim</button>
           </div>
 
           {/* Tools */}

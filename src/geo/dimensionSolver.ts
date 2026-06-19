@@ -10,10 +10,10 @@
 
 import { forwardDeg } from './EqualEarth';
 
-/** Default target hex count (Medium preset). */
-export const DEFAULT_HEX_BUDGET = 40_000;
-/** Hard cap on hex count (high-detail; WS3-validated). */
-export const MAX_HEX_BUDGET = 64_000;
+/** Default target hex count (Large preset). */
+export const DEFAULT_HEX_BUDGET = 64_000;
+/** Hard cap on hex count (high-detail). */
+export const MAX_HEX_BUDGET = 80_000;
 /** Lowest meaningful hex count (Custom clamp floor). */
 export const MIN_HEX_BUDGET = 4_000;
 

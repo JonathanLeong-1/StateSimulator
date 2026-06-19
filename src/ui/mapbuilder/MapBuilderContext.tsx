@@ -34,6 +34,7 @@ interface MapBuilderContextValue {
   loadEurasia: () => void;
   undo: () => void;
   redo: () => void;
+  trimEdges: (top: number, bottom: number, left: number, right: number) => void;
   convertToWorldData: () => WorldData;
 }
 
@@ -295,6 +296,38 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
     setState(prev => ({ ...prev, tiles: tiles.map(t => ({ ...t })) }));
   }, []);
 
+  const trimEdges = useCallback((top: number, bottom: number, left: number, right: number) => {
+    setState(prev => {
+      const t = Math.max(0, Math.floor(top));
+      const b = Math.max(0, Math.floor(bottom));
+      const l = Math.max(0, Math.floor(left));
+      const r = Math.max(0, Math.floor(right));
+      const newW = prev.width - l - r;
+      const newH = prev.height - t - b;
+      if (newW < MIN_DIM || newH < MIN_DIM) return prev; // guard: don't shrink below minimum
+      const newTiles: MapBuilderTile[] = [];
+      for (let row = t; row < prev.height - b; row++) {
+        for (let col = l; col < prev.width - r; col++) {
+          const oldIdx = row * prev.width + col;
+          const newIdx = (row - t) * newW + (col - l);
+          const old = prev.tiles[oldIdx];
+          newTiles.push({
+            index: newIdx,
+            q: col - l,
+            r: row - t,
+            terrain: old?.terrain ?? 'ocean',
+            productivityOverride: old?.productivityOverride ?? null,
+          });
+        }
+      }
+      pushHistory(prev.tiles);
+      // Reset history index since dimensions changed
+      historyRef.current = [];
+      historyIndexRef.current = -1;
+      return { ...prev, width: newW, height: newH, tiles: newTiles, isDirty: true };
+    });
+  }, [pushHistory]);
+
   const convertToWorldData = useCallback((): WorldData => {
     return WorldGenerator.fromCustomMap(state.tiles, state.width, state.height);
   }, [state.tiles, state.width, state.height]);
@@ -303,7 +336,7 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
     state, applyBrush, beginStroke, setTool, setBrushSize, setSelectedBiome,
     setProductivityValue, setRandomEnabled, setName, setDimensions,
     generateRandomContinents, clearMap, saveMap, loadMap, loadEurasia,
-    undo, redo, convertToWorldData,
+    undo, redo, trimEdges, convertToWorldData,
   };
 
   return <MapBuilderContext.Provider value={value}>{children}</MapBuilderContext.Provider>;
