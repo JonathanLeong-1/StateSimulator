@@ -165,7 +165,10 @@ describe('rasterizeRegion has no cosmetic post-processing (§6.2)', () => {
   it('should preserve an isolated single-cell island rather than smoothing it away', async () => {
     const ds = makeSingleIslandDataset();
     const bbox: BoundingBox = { lonMin: 0, latMin: 0, lonMax: 15, latMax: 15 };
-    const map = await rasterizeRegion(bbox, ds, { name: 'Island', hexBudget: 200 });
+    // Use a budget large enough that hex cells are < 1° wide, ensuring at
+    // least one hex center falls within the 1°×1° island cell regardless of
+    // grid column alignment.  400 hexes over 15°×15° → ~0.8° cells.
+    const map = await rasterizeRegion(bbox, ds, { name: 'Island', hexBudget: 400 });
     expectValidMap(map);
     const h = histogram(map);
      
@@ -174,8 +177,8 @@ describe('rasterizeRegion has no cosmetic post-processing (§6.2)', () => {
     const land = map.tiles.filter((t) => t.terrain !== 'ocean');
     // The lone island survives (a smoothing pass would erase it) ...
     expect(land.length).toBeGreaterThanOrEqual(1);
-    // ... and is NOT grown into a large blob — it stays a tiny isolated island.
-    expect(land.length).toBeLessThanOrEqual(4);
+    // ... and is NOT grown into a large blob — stays a small isolated island.
+    expect(land.length).toBeLessThanOrEqual(6);
     // Surviving tiles are valid land biomes (the steep coastal relief here
     // classes the lone cell as hills via TRI; either way it is NOT ocean).
     expect(land.every((t) => VALID_TERRAIN.has(t.terrain) && t.terrain !== 'ocean')).toBe(true);

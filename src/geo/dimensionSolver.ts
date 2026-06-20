@@ -113,11 +113,15 @@ export function solveDimensions(aspect: number, hexBudget: number): GridDimensio
   const a = aspect > 0 && Number.isFinite(aspect) ? aspect : 1;
   const n = Math.max(1, hexBudget);
   const ratio = a * HEX_ASPECT_FACTOR;
-  const gh = Math.round(Math.sqrt(n / ratio));
+  const ghRaw = Math.round(Math.sqrt(n / ratio));
+  // Round height to nearest even number — flat-top even-q offset hex grids
+  // produce a visual seam when height is odd (odd columns are offset by half
+  // a row, so the bottom row of even and odd columns won't pair cleanly).
+  const gh = Math.max(MIN_DIM, ghRaw % 2 === 0 ? ghRaw : ghRaw + 1);
   const gw = Math.round(ratio * gh);
   return {
     width: Math.max(MIN_DIM, gw),
-    height: Math.max(MIN_DIM, gh),
+    height: gh,
   };
 }
 

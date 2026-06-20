@@ -221,7 +221,7 @@ describe('Generate Default Maps — Integration Test', () => {
       const map = loadedMaps[id];
       expect(
         map.tiles.length >= min && map.tiles.length <= max,
-        `${id}: ${map.tiles.length} tiles is outside ±5% of 40k budget`,
+        `${id}: ${map.tiles.length} tiles is outside ±5% of 64k budget`,
       ).toBe(true);
     }
   });
