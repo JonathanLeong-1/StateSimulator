@@ -25,6 +25,7 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
     id: 'world',
     name: 'World',
     bbox: { lonMin: -180, latMin: -90, lonMax: 180, latMax: 90 },
+    hexBudget: 80_000,
   },
   {
     id: 'north-america',
@@ -54,8 +55,7 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
   {
     id: 'asia',
     name: 'Asia',
-    bbox: { lonMin: 25, latMin: -11, lonMax: 171, latMax: 78 },
-    hexBudget: 64_000,
+    bbox: { lonMin: 25, latMin: -11, lonMax: 180, latMax: 78 },
   },
   {
     id: 'eurasia',
