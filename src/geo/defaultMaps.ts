@@ -43,7 +43,8 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
   {
     id: 'americas',
     name: 'Americas',
-    bbox: { lonMin: -170, latMin: -56, lonMax: -34, latMax: 84 },
+    // Trimmed bbox: removes mostly-ocean Pacific west edge (70 cols from left).
+    bbox: { lonMin: -134, latMin: -56, lonMax: -34, latMax: 84 },
   },
   {
     id: 'africa',
@@ -53,7 +54,8 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
   {
     id: 'europe',
     name: 'Europe',
-    bbox: { lonMin: -25, latMin: 34, lonMax: 45, latMax: 72 },
+    // Trimmed bbox: removes mostly-ocean Atlantic west edge (30 cols from left).
+    bbox: { lonMin: -19, latMin: 34, lonMax: 45, latMax: 72 },
   },
   {
     id: 'asia',
