@@ -65,17 +65,20 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
   {
     id: 'eurasia',
     name: 'Eurasia',
-    bbox: { lonMin: -25, latMin: -11, lonMax: 170, latMax: 78 },
+    // Trimmed bbox: removes Atlantic west edge and Pacific far east (30 cols left, 40 cols right).
+    bbox: { lonMin: -10, latMin: -11, lonMax: 150, latMax: 78 },
   },
   {
     id: 'oceania',
     name: 'Oceania',
-    bbox: { lonMin: 110, latMin: -48, lonMax: 180, latMax: -10 },
+    // Trimmed bbox: removes empty ocean edges (50 cols left, 70 cols right).
+    bbox: { lonMin: 120, latMin: -48, lonMax: 167, latMax: -10 },
   },
   {
     id: 'old-world',
     name: 'Old World',
-    bbox: { lonMin: -25, latMin: -35, lonMax: 170, latMax: 78 },
+    // Trimmed bbox: removes Atlantic west edge and Pacific far east (10 cols left, 50 cols right).
+    bbox: { lonMin: -19, latMin: -11, lonMax: 141, latMax: 78 },
   },
 ] as const;
 
