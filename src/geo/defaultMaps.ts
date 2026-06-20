@@ -24,7 +24,9 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
   {
     id: 'world',
     name: 'World',
-    bbox: { lonMin: -180, latMin: -90, lonMax: 180, latMax: 90 },
+    // Trimmed bbox: removes mostly-ocean Pacific edges while keeping all continents.
+    // Corresponds to columns 70–416 of the Equal Earth full-world projection.
+    bbox: { lonMin: -122, latMin: -90, lonMax: 164, latMax: 90 },
     hexBudget: 80_000,
   },
   {
