@@ -32,7 +32,8 @@ export const DEFAULT_MAPS: readonly DefaultMapDef[] = [
   {
     id: 'north-america',
     name: 'North America',
-    bbox: { lonMin: -170, latMin: 7, lonMax: -52, latMax: 84 },
+    // Trimmed bbox: removes mostly-ocean Pacific west edge (120 cols from left).
+    bbox: { lonMin: -131, latMin: 7, lonMax: -52, latMax: 84 },
   },
   {
     id: 'south-america',
