@@ -1,10 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMapBuilder } from './MapBuilderContext';
 import { TERRAIN_COLORS } from '../../renderer/MapModes';
 import { gridForBudget, MIN_DIM, MAX_HEX_BUDGET } from '../../geo/dimensionSolver';
 import { RealWorldPanel } from './RealWorldPanel';
 import { DefaultMapGenerator } from './DefaultMapGenerator';
-import type { WorldData } from '../../types/world';
+import type { WorldData, TerrainType } from '../../types/world';
 import styles from './MapBuilderPanel.module.css';
 
 interface DefaultMapMeta {
@@ -20,16 +20,16 @@ interface DefaultMapsManifest {
   maps: DefaultMapMeta[];
 }
 
-const BIOME_LEGEND = [
+const BIOME_LEGEND: Array<{ terrain: TerrainType; label: string; productivity: string }> = [
   { terrain: 'river_valley', label: 'River Valley', productivity: '~0.93' },
-  { terrain: 'plains',       label: 'Plains',       productivity: '~0.70' },
-  { terrain: 'forest',       label: 'Forest',       productivity: '~0.53' },
-  { terrain: 'hills',        label: 'Hills',        productivity: '~0.40' },
-  { terrain: 'desert',       label: 'Desert',       productivity: '~0.15' },
-  { terrain: 'tundra',       label: 'Tundra',       productivity: '~0.18' },
-  { terrain: 'mountains',    label: 'Mountains',    productivity: '~0.15' },
-  { terrain: 'ocean',        label: 'Ocean',        productivity: 'impassable' },
-] as const;
+  { terrain: 'plains', label: 'Plains', productivity: '~0.70' },
+  { terrain: 'forest', label: 'Forest', productivity: '~0.53' },
+  { terrain: 'hills', label: 'Hills', productivity: '~0.40' },
+  { terrain: 'desert', label: 'Desert', productivity: '~0.15' },
+  { terrain: 'tundra', label: 'Tundra', productivity: '~0.18' },
+  { terrain: 'mountains', label: 'Mountains', productivity: '~0.15' },
+  { terrain: 'ocean', label: 'Ocean', productivity: 'impassable' },
+];
 
 const SIZE_PRESETS = [
   { label: 'Small', budget: 16_000 },
@@ -47,10 +47,6 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const widthInputRef = useRef<HTMLInputElement>(null);
   const heightInputRef = useRef<HTMLInputElement>(null);
-  const trimTopRef = useRef<HTMLInputElement>(null);
-  const trimBottomRef = useRef<HTMLInputElement>(null);
-  const trimLeftRef = useRef<HTMLInputElement>(null);
-  const trimRightRef = useRef<HTMLInputElement>(null);
 
   const [defaultMaps, setDefaultMaps] = useState<DefaultMapMeta[]>([]);
   const [isLoadingMap, setIsLoadingMap] = useState(false);
@@ -58,7 +54,6 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
   const [activeTab, setActiveTab] = useState<'builder' | 'realworld' | 'devgen'>('builder');
   const [showDevGen, setShowDevGen] = useState(false);
 
-  // Fetch the default maps manifest on mount
   useEffect(() => {
     const loadManifest = async () => {
       try {
@@ -71,12 +66,11 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
       }
     };
 
-    // Check for dev mode (URL param ?dev=1 or env var)
     const params = new URLSearchParams(window.location.search);
     const devMode = params.get('dev') === '1' || import.meta.env.VITE_DEV_MAPS === 'true';
     setShowDevGen(devMode);
 
-    loadManifest();
+    void loadManifest();
   }, []);
 
   const handleFileLoad = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,10 +87,13 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
       return;
     }
 
+    const mapMeta = defaultMaps.find(map => map.id === mapId);
+    if (!mapMeta) return;
+
     setSelectedMapId(mapId);
     setIsLoadingMap(true);
     try {
-      const response = await fetch(`${import.meta.env.BASE_URL}maps/${mapId}.worldmap.json`);
+      const response = await fetch(`${import.meta.env.BASE_URL}maps/${mapMeta.file}`);
       if (!response.ok) throw new Error(`Failed to fetch map: ${response.status}`);
       const json = await response.text();
       ctx.loadMap(json);
@@ -114,23 +111,8 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
     if (w > 0 && h > 0) ctx.setDimensions(w, h);
   };
 
-  const applyTrim = () => {
-    const top = Math.max(0, Number(trimTopRef.current?.value) || 0);
-    const bottom = Math.max(0, Number(trimBottomRef.current?.value) || 0);
-    const left = Math.max(0, Number(trimLeftRef.current?.value) || 0);
-    const right = Math.max(0, Number(trimRightRef.current?.value) || 0);
-    if (top + bottom + left + right === 0) return;
-    ctx.trimEdges(top, bottom, left, right);
-    // Reset trim inputs after applying
-    if (trimTopRef.current) trimTopRef.current.value = '0';
-    if (trimBottomRef.current) trimBottomRef.current.value = '0';
-    if (trimLeftRef.current) trimLeftRef.current.value = '0';
-    if (trimRightRef.current) trimRightRef.current.value = '0';
-  };
-
   return (
     <div className={styles.panel}>
-      {/* Tab Navigation */}
       <div className={styles.tabNav}>
         <button
           className={`${styles.tabBtn} ${activeTab === 'builder' ? styles.tabBtnActive : ''}`}
@@ -154,10 +136,8 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
         )}
       </div>
 
-      {/* Builder Tab */}
       {activeTab === 'builder' && (
         <>
-          {/* Header */}
           <div className={styles.section}>
             <div className={styles.title}>🗺 Map Builder</div>
             <input
@@ -168,38 +148,34 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
             />
           </div>
 
-          {/* Generate */}
           <div className={styles.section}>
-            <div className={styles.sectionLabel}>GENERATE</div>
-            <button className={styles.btn} onClick={ctx.generateRandomContinents}>🎲 Random Continents</button>
-            <button className={styles.btn} onClick={ctx.clearMap}>🗑 Clear Map</button>
+            <div className={styles.sectionLabel}>Generate</div>
+            <button className={styles.btn} onClick={ctx.generateRandomContinents}>🎲 Generate Random Continents</button>
+            {defaultMaps.length > 0 && (
+              <div className={styles.actionBlock}>
+                <label className={styles.subLabel}>Load Preset Map</label>
+                <select
+                  className={styles.mapSelect}
+                  value={selectedMapId}
+                  onChange={e => void handleSelectDefaultMap(e.target.value)}
+                  disabled={isLoadingMap}
+                >
+                  <option value="">Select one of 10 maps</option>
+                  {defaultMaps.map(map => (
+                    <option key={map.id} value={map.id}>
+                      {map.name}
+                    </option>
+                  ))}
+                </select>
+                {isLoadingMap && <div className={styles.loadingText}>Loading preset map...</div>}
+              </div>
+            )}
+            <button className={`${styles.btn} ${styles.destructiveBtn}`} onClick={ctx.clearMap}>🗑 Clear Map</button>
           </div>
 
-          {/* Default Maps Picker */}
-          {defaultMaps.length > 0 && (
-            <div className={styles.section}>
-              <div className={styles.sectionLabel}>DEFAULT MAPS</div>
-              <select
-                className={styles.mapSelect}
-                value={selectedMapId}
-                onChange={e => handleSelectDefaultMap(e.target.value)}
-                disabled={isLoadingMap}
-              >
-                <option value="">-- Select a map --</option>
-                {defaultMaps.map(map => (
-                  <option key={map.id} value={map.id}>
-                    {map.name}
-                  </option>
-                ))}
-              </select>
-              {isLoadingMap && <div className={styles.loadingText}>Loading map...</div>}
-            </div>
-          )}
-
-          {/* Map Size */}
           <div className={styles.section}>
             <div className={styles.sectionLabel}>
-              MAP SIZE · {state.width}×{state.height} (~{Math.round((state.width * state.height) / 1000)}k hexes)
+              Map Size · {state.width}×{state.height} (~{Math.round((state.width * state.height) / 1000)}k hexes)
             </div>
             <div className={styles.toolGrid}>
               {SIZE_PRESETS.map(preset => {
@@ -237,108 +213,96 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
                 defaultValue={state.height}
                 aria-label="Map height"
               />
-              <button className={styles.btn} onClick={applyCustomSize}>Apply</button>
+              <button className={styles.btnInline} onClick={applyCustomSize}>Apply</button>
             </div>
             <div className={styles.sizeHint}>Changing size starts a new blank map (max {Math.round(MAX_HEX_BUDGET / 1000)}k hexes).</div>
           </div>
 
-          {/* Trim Edges */}
           <div className={styles.section}>
-            <div className={styles.sectionLabel}>TRIM EDGES (rows / cols)</div>
-            <div className={styles.trimGrid}>
-              <label className={styles.trimLabel}>Top</label>
-              <input ref={trimTopRef} className={styles.sizeInput} type="number" min={0} defaultValue={0} aria-label="Trim top rows" />
-              <label className={styles.trimLabel}>Bottom</label>
-              <input ref={trimBottomRef} className={styles.sizeInput} type="number" min={0} defaultValue={0} aria-label="Trim bottom rows" />
-              <label className={styles.trimLabel}>Left</label>
-              <input ref={trimLeftRef} className={styles.sizeInput} type="number" min={0} defaultValue={0} aria-label="Trim left cols" />
-              <label className={styles.trimLabel}>Right</label>
-              <input ref={trimRightRef} className={styles.sizeInput} type="number" min={0} defaultValue={0} aria-label="Trim right cols" />
-            </div>
-            <button className={styles.btn} onClick={applyTrim}>✂ Trim</button>
-          </div>
-
-          {/* Tools */}
-          <div className={styles.section}>
-            <div className={styles.sectionLabel}>TOOL</div>
-            <div className={styles.toolGrid}>
-              {(['paint-ocean', 'paint-land', 'paint-biome', 'paint-productivity'] as const).map(tool => (
+            <div className={styles.sectionLabel}>Brush</div>
+            <div className={styles.brushBadge}>Paintbrush active</div>
+            <div className={styles.subLabel}>Biome</div>
+            <div className={styles.biomeGrid}>
+              {BIOME_LEGEND.map(({ terrain, label, productivity }) => (
                 <button
-                  key={tool}
-                  className={`${styles.toolBtn} ${state.tool === tool ? styles.toolBtnActive : ''}`}
-                  onClick={() => ctx.setTool(tool)}
+                  key={terrain}
+                  className={`${styles.biomeCard} ${state.selectedBiome === terrain ? styles.biomeCardActive : ''}`}
+                  onClick={() => ctx.setSelectedBiome(terrain)}
                 >
-                  {tool === 'paint-ocean' ? '🌊 Ocean'
-                   : tool === 'paint-land' ? '🌿 Land'
-                   : tool === 'paint-biome' ? '🎨 Biome'
-                   : '⛰ Prod.'}
+                  <span
+                    className={styles.biomeSwatch}
+                    style={{ background: (TERRAIN_COLORS as Record<string, string>)[terrain] ?? '#888' }}
+                  />
+                  <span>{label}</span>
+                  <span className={styles.biomeProductivity}>{productivity}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Biome Selector — unified card grid with swatch, name, productivity */}
-          {(state.tool === 'paint-land' || state.tool === 'paint-biome') && (
-            <div className={styles.section}>
-              <div className={styles.sectionLabel}>BIOME</div>
-              <div className={styles.biomeGrid}>
-                {BIOME_LEGEND.filter(b => b.terrain !== 'ocean').map(({ terrain, label, productivity }) => (
-                  <button
-                    key={terrain}
-                    className={`${styles.biomeCard} ${state.selectedBiome === terrain ? styles.biomeCardActive : ''}`}
-                    onClick={() => ctx.setSelectedBiome(terrain as Parameters<typeof ctx.setSelectedBiome>[0])}
-                  >
-                    <span
-                      className={styles.biomeSwatch}
-                      style={{ background: (TERRAIN_COLORS as Record<string, string>)[terrain] ?? '#888' }}
-                    />
-                    <span>{label}</span>
-                    <span className={styles.biomeProductivity}>{productivity}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Brush Size */}
           <div className={styles.section}>
-            <div className={styles.sectionLabel}>{state.brushSize === 0 ? 'BRUSH: SINGLE HEX' : state.brushSize === 1 ? 'BRUSH: 1 (RING)' : `BRUSH SIZE: ${state.brushSize}`}</div>
+            <div className={styles.sectionLabel}>{state.brushSize === 0 ? 'Brush: Single Hex' : `Brush Size: ${state.brushSize}`}</div>
             <input
-              type="range" min={0} max={8} step={1}
+              type="range"
+              min={0}
+              max={8}
+              step={1}
               value={state.brushSize}
               onChange={e => ctx.setBrushSize(Number(e.target.value))}
               className={styles.slider}
             />
           </div>
 
-          {/* Random intersperse */}
           <div className={styles.section}>
+            <div className={styles.sectionLabel}>Brush Variation</div>
             <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={state.randomEnabled}
                 onChange={e => ctx.setRandomEnabled(e.target.checked)}
               />
-              Randomize within brush
+              Add randomized biome mixing inside the brush
             </label>
+
+            <div className={`${styles.randomControls} ${state.randomEnabled ? '' : styles.randomControlsDisabled}`}>
+              <div className={styles.subLabel}>Variation Intensity: {Math.round(state.randomIntensity * 100)}%</div>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={state.randomIntensity}
+                onChange={e => ctx.setRandomIntensity(Number(e.target.value))}
+                className={styles.slider}
+                disabled={!state.randomEnabled}
+              />
+
+              <div className={styles.subLabel}>Biomes In Random Mix</div>
+              <div className={styles.randomBiomeGrid}>
+                {BIOME_LEGEND.map(({ terrain, label }) => {
+                  const active = state.randomBiomePool.includes(terrain);
+                  return (
+                    <button
+                      key={terrain}
+                      type="button"
+                      className={`${styles.randomBiomeChip} ${active ? styles.randomBiomeChipActive : ''}`}
+                      onClick={() => ctx.toggleRandomBiome(terrain)}
+                      disabled={!state.randomEnabled}
+                    >
+                      <span
+                        className={styles.randomBiomeDot}
+                        style={{ background: (TERRAIN_COLORS as Record<string, string>)[terrain] ?? '#888' }}
+                      />
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
-          {/* Productivity */}
-          {state.tool === 'paint-productivity' && (
-            <div className={styles.section}>
-              <div className={styles.sectionLabel}>PRODUCTIVITY: {state.productivityValue.toFixed(2)}</div>
-              <input
-                type="range" min={0} max={1} step={0.01}
-                value={state.productivityValue}
-                onChange={e => ctx.setProductivityValue(Number(e.target.value))}
-                className={styles.slider}
-              />
-            </div>
-          )}
-
-          {/* File */}
           <div className={styles.section}>
-            <div className={styles.sectionLabel}>FILE</div>
+            <div className={styles.sectionLabel}>File</div>
             <div className={styles.row}>
               <button className={styles.btn} onClick={ctx.saveMap}>💾 Save</button>
               <button className={styles.btn} onClick={() => fileInputRef.current?.click()}>📂 Load</button>
@@ -346,7 +310,6 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
             </div>
           </div>
 
-          {/* Undo/Redo */}
           <div className={styles.section}>
             <div className={styles.row}>
               <button className={styles.btn} onClick={ctx.undo}>↩ Undo Stroke</button>
@@ -354,21 +317,18 @@ export function MapBuilderPanel({ onRunSimulation }: Props) {
             </div>
           </div>
 
-          {/* Footer */}
           <div className={styles.footer}>
             <button className={styles.runBtn} onClick={() => onRunSimulation(ctx.convertToWorldData())}>▶ Run Simulation on This Map</button>
           </div>
         </>
       )}
 
-      {/* Real-World Tab */}
       {activeTab === 'realworld' && (
         <div className={styles.tabContent}>
           <RealWorldPanel />
         </div>
       )}
 
-      {/* Dev Gen Tab */}
       {activeTab === 'devgen' && showDevGen && (
         <div className={styles.tabContent}>
           <DefaultMapGenerator />

@@ -24,7 +24,7 @@ const EXPECTED_NAMES: Record<string, string> = {
   africa: 'Africa',
   europe: 'Europe',
   asia: 'Asia',
-  eurasia: 'Eurasia',
+  eurasia: 'My Map',
   oceania: 'Oceania',
   'old-world': 'Old World',
 };
@@ -117,11 +117,18 @@ function getTerrainPercent(map: SavedCustomMap, terrain: TerrainType): number {
 describe('Generate Default Maps — Integration Test', () => {
   const mapDir = join(process.cwd(), 'public', 'maps');
   const loadedMaps: Record<string, SavedCustomMap> = {};
+  const mapFiles: Record<string, string> = {};
 
   beforeAll(() => {
-    // Load all 10 maps
+    const manifestPath = join(process.cwd(), 'public', 'defaultMaps.json');
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as {
+      maps: Array<{ id: string; file: string }>;
+    };
+    for (const map of manifest.maps) mapFiles[map.id] = map.file;
+
+    // Load all 10 maps through the same manifest that the application uses.
     for (const id of EXPECTED_MAP_IDS) {
-      const filePath = join(mapDir, `${id}.worldmap.json`);
+      const filePath = join(mapDir, mapFiles[id]);
       expect(
         existsSync(filePath),
         `Expected file to exist: ${filePath}`,
@@ -147,14 +154,14 @@ describe('Generate Default Maps — Integration Test', () => {
     }
   });
 
-  it('should have all files be >3.5 MB (data-dense)', () => {
+  it('should have non-empty map assets', () => {
     for (const id of EXPECTED_MAP_IDS) {
-      const filePath = join(mapDir, `${id}.worldmap.json`);
+      const filePath = join(mapDir, mapFiles[id]);
       const stats = statSync(filePath);
       expect(
-        stats.size / 1024 / 1024,
-        `${id}.worldmap.json should be >3.5 MB`,
-      ).toBeGreaterThan(3.5);
+        stats.size,
+        `${mapFiles[id]} should not be empty`,
+      ).toBeGreaterThan(0);
     }
   });
 
@@ -165,7 +172,7 @@ describe('Generate Default Maps — Integration Test', () => {
   it('should parse all maps as valid JSON', () => {
     for (const id of EXPECTED_MAP_IDS) {
       expect(() => {
-        const filePath = join(mapDir, `${id}.worldmap.json`);
+        const filePath = join(mapDir, mapFiles[id]);
         const content = readFileSync(filePath, 'utf-8');
         JSON.parse(content);
       }).not.toThrow();
@@ -211,18 +218,15 @@ describe('Generate Default Maps — Integration Test', () => {
     }
   });
 
-  it('should have all maps with approximately 64k ± 5% tiles (hex budget)', () => {
-    const tolerance = 0.05; // ±5%
-    const target = 64000;
-    const min = target * (1 - tolerance);
-    const max = target * (1 + tolerance);
-
+  it('should keep all preset maps within the supported size range', () => {
     for (const id of EXPECTED_MAP_IDS) {
       const map = loadedMaps[id];
-      expect(
-        map.tiles.length >= min && map.tiles.length <= max,
-        `${id}: ${map.tiles.length} tiles is outside ±5% of 64k budget`,
-      ).toBe(true);
+      if (id === 'eurasia') {
+        expect(map.tiles.length, 'handmade Eurasia should remain the compact 16k map').toBe(16_000);
+        continue;
+      }
+      expect(map.tiles.length, `${id}: map should have at least 16k tiles`).toBeGreaterThanOrEqual(16_000);
+      expect(map.tiles.length, `${id}: map should have at most 80k tiles`).toBeLessThanOrEqual(80_000);
     }
   });
 

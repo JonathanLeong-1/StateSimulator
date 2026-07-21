@@ -1,17 +1,20 @@
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 import type { MapBuilderState, MapBuilderTile, SavedCustomMap } from '../../types/mapbuilder';
-import type { TerrainType } from '../../types/world';
-import type { WorldData } from '../../types/world';
+import type { TerrainType, WorldData } from '../../types/world';
 import { WorldGenerator } from '../../simulation/WorldGenerator';
 import { mulberry32 } from '../../simulation/rng';
 import { DEFAULT_GRID, MAX_HEX_BUDGET, MIN_DIM } from '../../geo/dimensionSolver';
 
-const LAND_BIOMES: TerrainType[] = ['plains', 'hills', 'forest', 'desert', 'tundra', 'river_valley', 'mountains'];
-
 function makeInitialTiles(width: number, height: number): MapBuilderTile[] {
   const tiles: MapBuilderTile[] = [];
   for (let i = 0; i < width * height; i++) {
-    tiles.push({ index: i, q: i % width, r: Math.floor(i / width), terrain: 'ocean', productivityOverride: null });
+    tiles.push({
+      index: i,
+      q: i % width,
+      r: Math.floor(i / width),
+      terrain: 'ocean',
+      productivityOverride: null,
+    });
   }
   return tiles;
 }
@@ -20,21 +23,19 @@ interface MapBuilderContextValue {
   state: MapBuilderState;
   applyBrush: (centerIdx: number) => void;
   beginStroke: () => void;
-  setTool: (tool: MapBuilderState['tool']) => void;
   setBrushSize: (size: number) => void;
   setSelectedBiome: (biome: TerrainType) => void;
-  setProductivityValue: (val: number) => void;
   setRandomEnabled: (enabled: boolean) => void;
+  setRandomIntensity: (intensity: number) => void;
+  toggleRandomBiome: (biome: TerrainType) => void;
   setName: (name: string) => void;
   setDimensions: (width: number, height: number) => void;
   generateRandomContinents: () => void;
   clearMap: () => void;
   saveMap: () => void;
   loadMap: (json: string) => void;
-  loadEurasia: () => void;
   undo: () => void;
   redo: () => void;
-  trimEdges: (top: number, bottom: number, left: number, right: number) => void;
   convertToWorldData: () => WorldData;
 }
 
@@ -47,16 +48,21 @@ export function useMapBuilder(): MapBuilderContextValue {
   return ctx;
 }
 
+function normalizeRandomPool(pool: TerrainType[], fallback: TerrainType): TerrainType[] {
+  const unique = [...new Set(pool)];
+  return unique.length > 0 ? unique : [fallback];
+}
+
 export function MapBuilderProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<MapBuilderState>({
     tiles: makeInitialTiles(DEFAULT_GRID.width, DEFAULT_GRID.height),
     width: DEFAULT_GRID.width,
     height: DEFAULT_GRID.height,
-    tool: 'paint-land',
     brushSize: 2,
     selectedBiome: 'plains',
-    productivityValue: 0.5,
     randomEnabled: false,
+    randomIntensity: 0.35,
+    randomBiomePool: ['forest', 'hills', 'river_valley'],
     name: 'My Map',
     isDirty: false,
   });
@@ -94,8 +100,8 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
 
       const indexMap = new Map<string, number>();
       for (const t of prev.tiles) indexMap.set(`${t.q},${t.r}`, t.index);
-      const DIRS_EVEN = [[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[0,1]] as const;
-      const DIRS_ODD  = [[1,1],[1,0],[0,-1],[-1,0],[-1,1],[0,1]] as const;
+      const dirsEven = [[1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [0, 1]] as const;
+      const dirsOdd = [[1, 1], [1, 0], [0, -1], [-1, 0], [-1, 1], [0, 1]] as const;
 
       const brushSet = new Set<number>([centerIdx]);
       const queue = [centerIdx];
@@ -103,7 +109,7 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
       while (queue.length > 0) {
         const curr = queue.shift()!;
         const ct = prev.tiles[curr];
-        const dirs = ct.q % 2 === 0 ? DIRS_EVEN : DIRS_ODD;
+        const dirs = ct.q % 2 === 0 ? dirsEven : dirsOdd;
         for (const [dq, dr] of dirs) {
           const ni = indexMap.get(`${ct.q + dq},${ct.r + dr}`);
           if (ni === undefined || visited.has(ni)) continue;
@@ -122,45 +128,59 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
       }
 
       const rng = mulberry32(Math.floor(Math.random() * 999999));
+      const randomPool = normalizeRandomPool(prev.randomBiomePool, prev.selectedBiome);
 
       const newTiles = prev.tiles.map(t => {
         if (!brushSet.has(t.index)) return t;
-        let terrain = t.terrain;
-        let productivityOverride = t.productivityOverride;
 
-        if (prev.tool === 'paint-ocean') {
-          terrain = 'ocean';
-          productivityOverride = null;
-        } else if (prev.tool === 'paint-land' || prev.tool === 'paint-biome') {
-          if (prev.tool === 'paint-biome' && t.terrain === 'ocean') return t;
-          if (prev.randomEnabled) {
-            terrain = rng() < 0.7 ? prev.selectedBiome : LAND_BIOMES[Math.floor(rng() * LAND_BIOMES.length)];
-          } else {
-            terrain = prev.selectedBiome;
-          }
-        } else if (prev.tool === 'paint-productivity') {
-          const val = prev.randomEnabled
-            ? Math.max(0, Math.min(1, prev.productivityValue + (rng() - 0.5) * 0.5))
-            : prev.productivityValue;
-          productivityOverride = val;
-        }
-        return { ...t, terrain, productivityOverride };
+        const useRandomBiome = prev.randomEnabled && rng() < prev.randomIntensity;
+        const terrain = useRandomBiome
+          ? randomPool[Math.floor(rng() * randomPool.length)]
+          : prev.selectedBiome;
+
+        return {
+          ...t,
+          terrain,
+          productivityOverride: terrain === 'ocean' ? null : t.productivityOverride,
+        };
       });
 
       return { ...prev, tiles: newTiles, isDirty: true };
     });
   }, [pushHistory]);
 
-  const setTool = useCallback((tool: MapBuilderState['tool']) => setState(p => ({ ...p, tool })), []);
-  const setBrushSize = useCallback((brushSize: number) => setState(p => ({ ...p, brushSize: Math.max(0, Math.min(8, brushSize)) })), []);
-  const setSelectedBiome = useCallback((selectedBiome: TerrainType) => setState(p => ({ ...p, selectedBiome })), []);
-  const setProductivityValue = useCallback((productivityValue: number) => setState(p => ({ ...p, productivityValue })), []);
-  const setRandomEnabled = useCallback((randomEnabled: boolean) => setState(p => ({ ...p, randomEnabled })), []);
+  const setBrushSize = useCallback((brushSize: number) => {
+    setState(prev => ({ ...prev, brushSize: Math.max(0, Math.min(8, brushSize)) }));
+  }, []);
+
+  const setSelectedBiome = useCallback((selectedBiome: TerrainType) => {
+    setState(prev => ({ ...prev, selectedBiome }));
+  }, []);
+
+  const setRandomEnabled = useCallback((randomEnabled: boolean) => {
+    setState(prev => ({ ...prev, randomEnabled }));
+  }, []);
+
+  const setRandomIntensity = useCallback((randomIntensity: number) => {
+    setState(prev => ({ ...prev, randomIntensity: Math.max(0, Math.min(1, randomIntensity)) }));
+  }, []);
+
+  const toggleRandomBiome = useCallback((biome: TerrainType) => {
+    setState(prev => {
+      const exists = prev.randomBiomePool.includes(biome);
+      const nextPool = exists
+        ? prev.randomBiomePool.filter(item => item !== biome)
+        : [...prev.randomBiomePool, biome];
+      return {
+        ...prev,
+        randomBiomePool: normalizeRandomPool(nextPool, prev.selectedBiome),
+      };
+    });
+  }, []);
+
   const setName = useCallback((name: string) => setState(p => ({ ...p, name })), []);
 
   const setDimensions = useCallback((width: number, height: number) => {
-    // Clamp each axis to at least MIN_DIM, then shrink proportionally so the
-    // total never exceeds the validated hex budget cap.
     let w = Math.max(MIN_DIM, Math.round(width) || MIN_DIM);
     let h = Math.max(MIN_DIM, Math.round(height) || MIN_DIM);
     if (w * h > MAX_HEX_BUDGET) {
@@ -170,7 +190,6 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
     }
     setState(prev => {
       if (w === prev.width && h === prev.height) return prev;
-      // New size discards content: reset history and start from a blank map.
       historyRef.current = [];
       historyIndexRef.current = -1;
       return { ...prev, width: w, height: h, tiles: makeInitialTiles(w, h), isDirty: true };
@@ -201,7 +220,7 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
           return dist <= blob.radius;
         });
 
-        if (!inBlob) return { ...t, terrain: 'ocean' as TerrainType };
+        if (!inBlob) return { ...t, terrain: 'ocean' as TerrainType, productivityOverride: null };
 
         const rRatio = t.r / h;
         let terrain: TerrainType;
@@ -238,7 +257,11 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
         savedAt: new Date().toISOString(),
         width: prev.width,
         height: prev.height,
-        tiles: prev.tiles.map(t => ({ index: t.index, terrain: t.terrain, productivityOverride: t.productivityOverride })),
+        tiles: prev.tiles.map(t => ({
+          index: t.index,
+          terrain: t.terrain,
+          productivityOverride: t.productivityOverride,
+        })),
       };
       const blob = new Blob([JSON.stringify(saved, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -275,13 +298,6 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
-  const loadEurasia = useCallback(() => {
-    fetch(`${import.meta.env.BASE_URL}eurasia.worldmap.json`)
-      .then(r => r.text())
-      .then(loadMap)
-      .catch(err => console.error('Failed to load Eurasia map:', err));
-  }, [loadMap]);
-
   const undo = useCallback(() => {
     if (historyIndexRef.current < 0) return;
     const tiles = historyRef.current[historyIndexRef.current];
@@ -296,47 +312,28 @@ export function MapBuilderProvider({ children }: { children: React.ReactNode }) 
     setState(prev => ({ ...prev, tiles: tiles.map(t => ({ ...t })) }));
   }, []);
 
-  const trimEdges = useCallback((top: number, bottom: number, left: number, right: number) => {
-    setState(prev => {
-      const t = Math.max(0, Math.floor(top));
-      const b = Math.max(0, Math.floor(bottom));
-      const l = Math.max(0, Math.floor(left));
-      const r = Math.max(0, Math.floor(right));
-      const newW = prev.width - l - r;
-      const newH = prev.height - t - b;
-      if (newW < MIN_DIM || newH < MIN_DIM) return prev; // guard: don't shrink below minimum
-      const newTiles: MapBuilderTile[] = [];
-      for (let row = t; row < prev.height - b; row++) {
-        for (let col = l; col < prev.width - r; col++) {
-          const oldIdx = row * prev.width + col;
-          const newIdx = (row - t) * newW + (col - l);
-          const old = prev.tiles[oldIdx];
-          newTiles.push({
-            index: newIdx,
-            q: col - l,
-            r: row - t,
-            terrain: old?.terrain ?? 'ocean',
-            productivityOverride: old?.productivityOverride ?? null,
-          });
-        }
-      }
-      pushHistory(prev.tiles);
-      // Reset history index since dimensions changed
-      historyRef.current = [];
-      historyIndexRef.current = -1;
-      return { ...prev, width: newW, height: newH, tiles: newTiles, isDirty: true };
-    });
-  }, [pushHistory]);
-
   const convertToWorldData = useCallback((): WorldData => {
     return WorldGenerator.fromCustomMap(state.tiles, state.width, state.height);
   }, [state.tiles, state.width, state.height]);
 
   const value: MapBuilderContextValue = {
-    state, applyBrush, beginStroke, setTool, setBrushSize, setSelectedBiome,
-    setProductivityValue, setRandomEnabled, setName, setDimensions,
-    generateRandomContinents, clearMap, saveMap, loadMap, loadEurasia,
-    undo, redo, trimEdges, convertToWorldData,
+    state,
+    applyBrush,
+    beginStroke,
+    setBrushSize,
+    setSelectedBiome,
+    setRandomEnabled,
+    setRandomIntensity,
+    toggleRandomBiome,
+    setName,
+    setDimensions,
+    generateRandomContinents,
+    clearMap,
+    saveMap,
+    loadMap,
+    undo,
+    redo,
+    convertToWorldData,
   };
 
   return <MapBuilderContext.Provider value={value}>{children}</MapBuilderContext.Provider>;

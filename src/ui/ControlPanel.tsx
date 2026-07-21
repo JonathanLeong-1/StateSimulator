@@ -10,10 +10,9 @@ export function ControlPanel() {
     stepOnce,
     stepN,
     resetSim,
-    loadEurasia,
+    loadBuiltInMap,
     randomizeContinents,
     changeSettings,
-    changeSeed,
     saveJSON,
     loadJSON,
     exportScreenshot,
@@ -21,11 +20,7 @@ export function ControlPanel() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { settings, isPlaying, speed, seed, mapMode } = uiState;
-
-  const handleSeedKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') changeSeed((e.target as HTMLInputElement).value);
-  };
+  const { settings, isPlaying, speed, mapMode, showEventFlashes } = uiState;
 
   const handleLoadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,7 +58,7 @@ export function ControlPanel() {
         </div>
         <div className={styles.buttonRow}>
           <button className={styles.btn} onClick={resetSim}>↺ Reset</button>
-          <button className={styles.btn} onClick={loadEurasia}>🗺 Eurasia</button>
+          <button className={styles.btn} onClick={() => void loadBuiltInMap('europe')}>🗺 Europe</button>
           <button className={styles.btn} onClick={randomizeContinents}>🌍 Random</button>
         </div>
       </section>
@@ -92,17 +87,6 @@ export function ControlPanel() {
           value={logSpeed(speed)}
           onChange={e => setUIState(prev => ({ ...prev, speed: sliderToSpeed(Number(e.target.value)) }))}
           className={styles.slider}
-        />
-      </section>
-
-      {/* Seed */}
-      <section className={styles.section}>
-        <label className={styles.label}>Seed</label>
-        <input
-          className={styles.input}
-          defaultValue={seed}
-          onKeyDown={handleSeedKeyDown}
-          placeholder="Press Enter to apply"
         />
       </section>
 
@@ -155,6 +139,11 @@ export function ControlPanel() {
           <input type="checkbox" checked={settings.enableDisconnectedSplit}
             onChange={e => changeSettings({ enableDisconnectedSplit: e.target.checked })} />
           Split Disconnected States
+        </label>
+        <label className={styles.toggleLabel}>
+          <input type="checkbox" checked={showEventFlashes}
+            onChange={e => setUIState(prev => ({ ...prev, showEventFlashes: e.target.checked }))} />
+          Show conquests and secessions
         </label>
       </section>
 

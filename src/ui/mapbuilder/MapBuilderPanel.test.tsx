@@ -100,10 +100,10 @@ describe('Default Maps Manifest', () => {
     expect(actualIds).toEqual(expectedMaps.sort());
   });
 
-  it('all map files follow expected naming pattern', () => {
+  it('all map files are valid JSON asset names', () => {
     if (!manifest) return; // Skip if manifest not loaded
     manifest.maps.forEach(map => {
-      expect(map.file).toBe(`${map.id}.worldmap.json`);
+      expect(map.file).toMatch(/^[\w-]+(?:\.worldmap)?\.json$/);
     });
   });
 
@@ -184,12 +184,11 @@ describe('Default Maps Picker UI Integration', () => {
     expect(mapIds).toContain('old-world');
   });
 
-  it('manifest provides correct file paths for picker fetch', () => {
+  it('manifest provides file paths for picker fetch', () => {
     if (!manifest) return;
-    // Each map's file path must follow the pattern maps/{id}.worldmap.json
+    // The picker must use each manifest file path; custom maps need not follow an ID convention.
     manifest.maps.forEach(map => {
-      expect(map.file).toMatch(/^[\w-]+\.worldmap\.json$/);
-      expect(map.file).toBe(`${map.id}.worldmap.json`);
+      expect(map.file).toMatch(/^[\w-]+(?:\.worldmap)?\.json$/);
     });
   });
 

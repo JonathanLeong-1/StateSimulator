@@ -52,10 +52,10 @@
     },
     {
       "id": "eurasia",
-      "name": "Eurasia",
-      "file": "eurasia.worldmap.json",
+      "name": "Eurasia (small)",
+      "file": "Eurasia_handmade.json",
       "bbox": { "lonMin": -25, "latMin": -11, "lonMax": 180, "latMax": 78 },
-      "hexBudget": 40000
+      "hexBudget": 16000
     },
     {
       "id": "oceania",
@@ -67,7 +67,7 @@
     {
       "id": "old-world",
       "name": "Old World",
-      "file": "old-world.worldmap.json",
+      "file": "old-world.json",
       "bbox": { "lonMin": -25, "latMin": -35, "lonMax": 180, "latMax": 78 },
       "hexBudget": 40000
     }

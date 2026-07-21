@@ -29,11 +29,8 @@ import type { GeoDataset } from './GeoDataset';
 
 export interface RasterizeOptions {
   name: string;
-  /** Target hex count N. Used only when `dimensions` is not set. */
+  /** Target hex count N. */
   hexBudget: number;
-  /** Explicit grid dimensions. When set, bypasses `solveDimensions` so the
-   *  output has exactly the given width × height regardless of hex budget. */
-  dimensions?: { width: number; height: number };
   /** Local relief (metres) at/above which a hex becomes `mountains`. */
   mountainThreshold?: number;
   /** Local relief (metres) at/above which a hex becomes `hills`. */
@@ -66,8 +63,7 @@ export async function rasterizeRegion(
   const hillThreshold = opts.hillThreshold ?? DEFAULT_HILL_THRESHOLD;
 
   const extent = projectedExtent(bbox);
-  const dims = opts.dimensions ?? solveDimensions(extent.aspect, opts.hexBudget);
-  const { width, height } = dims;
+  const { width, height } = solveDimensions(extent.aspect, opts.hexBudget);
 
   const { minX, maxX, minY, maxY } = extent;
   const spanX = maxX - minX;

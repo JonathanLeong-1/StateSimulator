@@ -29,7 +29,7 @@ function AppInner() {
 
   const handleDismissSplash = useCallback(() => {
     setShowSplash(false);
-    simContext.loadEurasia();
+    void simContext.loadBuiltInMap('eurasia');
     simContext.setUIState(prev => ({ ...prev, isPlaying: false, speed: 300 }));
   }, [simContext]);
 
@@ -92,4 +92,3 @@ function App() {
 }
 
 export default App;
-

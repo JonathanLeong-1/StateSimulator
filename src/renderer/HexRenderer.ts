@@ -190,7 +190,7 @@ export class HexRenderer {
     // PASS 5: Edge flash — conquest (gold) / secession (red)
     // Only flash edges shared with neighboring tiles from a different state.
     const flashingTiles = animations.getFlashingTiles();
-    if (flashingTiles.size > 0) {
+    if (uiState.showEventFlashes && flashingTiles.size > 0) {
       for (const [tileIndex, { type, intensity }] of flashingTiles) {
         const tile = tiles[tileIndex];
         if (!tile) continue;
@@ -293,52 +293,83 @@ export class HexRenderer {
       ctx.restore();
     }
 
-    // PASS 9: State name labels
-    const MIN_TILES_FOR_LABEL = 3;
-    const MIN_SCALE_FOR_LABEL = 0.5;
-
-    if (this.camera.scale >= MIN_SCALE_FOR_LABEL) {
-      ctx.save();
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      for (const [, state] of simState.states) {
-        if (state.size < MIN_TILES_FOR_LABEL) continue;
-
-        // Compute centroid (average of tile centers)
-        let sx = 0, sy = 0;
+    // PASS 9: State labels are placed in screen space. This keeps major states
+    // readable when zoomed out, while collision checks reveal smaller states as
+    // the user zooms in and more room becomes available.
+    const labelCandidates = [...simState.states.values()]
+      .filter(state => state.size > 0)
+      .sort((a, b) => b.size - a.size)
+      .map(state => {
+        let sx = 0;
+        let sy = 0;
+        let count = 0;
         for (const idx of state.tileIndices) {
-          const t = tiles[idx];
-          if (!t) continue;
-          const [tx, ty] = this.tileCenter(t.q, t.r);
-          sx += tx; sy += ty;
+          const tile = tiles[idx];
+          if (!tile) continue;
+          const [tx, ty] = this.tileCenter(tile.q, tile.r);
+          sx += tx;
+          sy += ty;
+          count++;
         }
-        const cx = sx / state.tileIndices.size;
-        const cy = sy / state.tileIndices.size;
+        return {
+          state,
+          x: this.camera.x + (sx / count) * this.camera.scale,
+          y: this.camera.y + (sy / count) * this.camera.scale,
+        };
+      });
 
-        const fontSize = Math.max(7, Math.min(11, HEX_SIZE * 0.85));
-        const lineGap = fontSize * 1.3;
+    const density = Math.min(1, this.camera.scale / 2);
+    const maxLabels = Math.max(6, Math.round(8 + density * 52));
+    const fontSize = Math.round(10 + density * 3);
+    const occupiedLabels: Array<{ left: number; top: number; right: number; bottom: number }> = [];
 
-        // Name — stroke halo then fill
-        ctx.font = `600 ${fontSize}px sans-serif`;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `600 ${fontSize}px sans-serif`;
+
+    let labelsDrawn = 0;
+    for (const { state, x, y } of labelCandidates) {
+      if (labelsDrawn >= maxLabels) break;
+      if (x < -40 || x > canvas.width + 40 || y < -24 || y > canvas.height + 24) continue;
+
+      const width = ctx.measureText(state.name).width + 12;
+      const showCount = density >= 0.35 && state.size >= 3;
+      const height = showCount ? fontSize * 2.25 : fontSize + 8;
+      const bounds = {
+        left: x - width / 2,
+        top: y - height / 2,
+        right: x + width / 2,
+        bottom: y + height / 2,
+      };
+      const overlaps = occupiedLabels.some(label =>
+        bounds.left < label.right && bounds.right > label.left &&
+        bounds.top < label.bottom && bounds.bottom > label.top,
+      );
+      if (overlaps) continue;
+
+      occupiedLabels.push(bounds);
+      labelsDrawn++;
+      const nameY = showCount ? y - fontSize * 0.43 : y;
+
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.76)';
+      ctx.strokeText(state.name, x, nameY);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+      ctx.fillText(state.name, x, nameY);
+
+      if (showCount) {
+        ctx.font = `500 ${Math.max(9, fontSize - 2)}px sans-serif`;
         ctx.lineWidth = 2.5;
-        ctx.strokeStyle = 'rgba(0,0,0,0.70)';
-        ctx.strokeText(state.name, cx, cy - lineGap * 0.4);
-        ctx.fillStyle = 'rgba(255,255,255,0.92)';
-        ctx.fillText(state.name, cx, cy - lineGap * 0.4);
-
-        // Tile count — stroke halo then fill
-        const countSize = Math.max(6, fontSize - 1.5);
-        ctx.font = `400 ${countSize}px sans-serif`;
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgba(0,0,0,0.60)';
-        ctx.strokeText(`${state.size}`, cx, cy + lineGap * 0.55);
-        ctx.fillStyle = 'rgba(255,255,255,0.70)';
-        ctx.fillText(`${state.size}`, cx, cy + lineGap * 0.55);
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.66)';
+        ctx.strokeText(`${state.size}`, x, y + fontSize * 0.7);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.76)';
+        ctx.fillText(`${state.size}`, x, y + fontSize * 0.7);
+        ctx.font = `600 ${fontSize}px sans-serif`;
       }
-
-      ctx.restore();
     }
+    ctx.restore();
 
     ctx.restore();
   }

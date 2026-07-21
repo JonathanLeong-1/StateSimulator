@@ -92,10 +92,6 @@ export function MapBuilderCanvas() {
       if (e.ctrlKey && e.key === 'y') { ctx.redo(); return; }
       if (e.key === '[') ctx.setBrushSize(Math.max(0, ctx.state.brushSize - 1));
       if (e.key === ']') ctx.setBrushSize(Math.min(8, ctx.state.brushSize + 1));
-      if (e.key === 'l' || e.key === 'L') ctx.setTool('paint-land');
-      if (e.key === 'o' || e.key === 'O') ctx.setTool('paint-ocean');
-      if (e.key === 'b' || e.key === 'B') ctx.setTool('paint-biome');
-      if (e.key === 'p' || e.key === 'P') ctx.setTool('paint-productivity');
       if (e.key === 'r' || e.key === 'R') {
         const canvas = canvasRef.current;
         const renderer = rendererRef.current;

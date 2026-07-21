@@ -27,5 +27,5 @@ export interface UIState {
   speed: number;
   settings: SimSettings;
   chartHistory: ChartDataPoint[];
-  seed: string;
+  showEventFlashes: boolean;
 }

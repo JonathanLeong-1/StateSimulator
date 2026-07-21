@@ -13,11 +13,22 @@ import {
 import { WorldGenerator } from './simulation/WorldGenerator';
 import { SimulationEngine } from './simulation/SimulationEngine';
 import { AnimationController } from './renderer/AnimationController';
-import { buildWorld, buildCircleWorld, randomizeContinents as randomizeContinentsHelper } from './SimulationContext.helpers';
+import { buildCircleWorld, randomizeContinents as randomizeContinentsHelper } from './SimulationContext.helpers';
 import type { WorldData } from './types/world';
 import type { SimState } from './types/simulation';
 import type { UIState, SimSettings } from './types/ui';
 import type { MapBuilderTile, SavedCustomMap } from './types/mapbuilder';
+
+interface DefaultMapMeta {
+  id: string;
+  name: string;
+  file: string;
+}
+
+interface DefaultMapsManifest {
+  version: number;
+  maps: DefaultMapMeta[];
+}
 
 const DEFAULT_SETTINGS: SimSettings = {
   baseConflictRate: 0.3,
@@ -39,7 +50,7 @@ const DEFAULT_UI_STATE: UIState = {
   speed: 300,
   settings: DEFAULT_SETTINGS,
   chartHistory: [],
-  seed: '42',
+  showEventFlashes: false,
 };
 
 interface SimContextValue {
@@ -52,9 +63,8 @@ interface SimContextValue {
   stepOnce: () => void;
   stepN: (n: number) => void;
   resetSim: () => void;
-  loadEurasia: () => void;
+  loadBuiltInMap: (mapId: string) => Promise<void>;
   changeSettings: (patch: Partial<SimSettings>) => void;
-  changeSeed: (seed: string) => void;
   renameState: (id: number, name: string) => void;
   saveJSON: () => void;
   loadJSON: (json: string) => void;
@@ -85,7 +95,6 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   // Mutable settings object shared with the engine so live changes take effect
   const settingsRef = useRef<SimSettings>({ ...DEFAULT_SETTINGS });
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const seedRef = useRef(DEFAULT_UI_STATE.seed);
   const canvasElementRef = useRef<HTMLCanvasElement | null>(null);
 
   const setCanvasElement = useCallback((el: HTMLCanvasElement | null) => {
@@ -102,25 +111,50 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
     a.click();
   }, []);
 
-  // Initialize on mount — load Eurasia by default, fall back to circle world
+  const loadBuiltInMap = useCallback(async (mapId: string) => {
+    const manifestResponse = await fetch(`${import.meta.env.BASE_URL}defaultMaps.json`);
+    if (!manifestResponse.ok) {
+      throw new Error(`Failed to fetch default map manifest: ${manifestResponse.status}`);
+    }
+
+    const manifest: DefaultMapsManifest = await manifestResponse.json();
+    const mapMeta = manifest.maps.find(map => map.id === mapId);
+    if (!mapMeta) {
+      throw new Error(`Unknown built-in map: ${mapId}`);
+    }
+
+    const mapResponse = await fetch(`${import.meta.env.BASE_URL}maps/${mapMeta.file}`);
+    if (!mapResponse.ok) {
+      throw new Error(`Failed to fetch built-in map ${mapId}: ${mapResponse.status}`);
+    }
+
+    const data: SavedCustomMap = await mapResponse.json();
+    const tiles: MapBuilderTile[] = data.tiles.map(t => ({
+      index: t.index,
+      q: t.index % data.width,
+      r: Math.floor(t.index / data.width),
+      terrain: t.terrain,
+      productivityOverride: t.productivityOverride,
+    }));
+    const worldData = WorldGenerator.fromCustomMap(tiles, data.width, data.height);
+    const engine = new SimulationEngine(worldData, settingsRef.current);
+    engine.initialize();
+    engineRef.current = engine;
+    animControllerRef.current = new AnimationController();
+    setWorld(worldData);
+    setSimState(engine.getState());
+    setUIState(prev => ({
+      ...prev,
+      isPlaying: false,
+      chartHistory: [],
+      hoveredTileIndex: null,
+      selectedStateId: null,
+    }));
+  }, []);
+
+  // Initialize on mount — load the handmade Eurasia map by default, fall back to circle world
   useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}eurasia.worldmap.json`)
-      .then(r => r.json())
-      .then((data: SavedCustomMap) => {
-        const tiles: MapBuilderTile[] = data.tiles.map(t => ({
-          index: t.index,
-          q: t.index % data.width,
-          r: Math.floor(t.index / data.width),
-          terrain: t.terrain,
-          productivityOverride: t.productivityOverride,
-        }));
-        const worldData = WorldGenerator.fromCustomMap(tiles, data.width, data.height);
-        const engine = new SimulationEngine(worldData, settingsRef.current);
-        engine.initialize();
-        engineRef.current = engine;
-        setWorld(worldData);
-        setSimState(engine.getState());
-      })
+    loadBuiltInMap('eurasia')
       .catch(() => {
         // fallback if asset unavailable (e.g., unit tests)
         const { world: w, engine } = buildCircleWorld(settingsRef.current);
@@ -128,7 +162,7 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
         setWorld(w);
         setSimState(engine.getState());
       });
-  }, []);
+  }, [loadBuiltInMap]);
 
   // Advance one step and record animations via ownership diff
   const doStep = useCallback(() => {
@@ -224,24 +258,6 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
     setUIState(prev => ({ ...prev, settings: { ...settingsRef.current } }));
   }, []);
 
-  const changeSeed = useCallback((seed: string) => {
-    seedRef.current = seed;
-    const numSeed = parseInt(seed, 10) || 42;
-    const { world: w, engine } = buildWorld(numSeed, settingsRef.current);
-    engineRef.current = engine;
-    setWorld(w);
-    setSimState(engine.getState());
-    animControllerRef.current = new AnimationController();
-    setUIState(prev => ({
-      ...prev,
-      seed,
-      isPlaying: false,
-      chartHistory: [],
-      hoveredTileIndex: null,
-      selectedStateId: null,
-    }));
-  }, []);
-
   const renameState = useCallback((id: number, name: string) => {
     // Directly mutate the StateData in the engine's live simState
     const state = engineRef.current?.getState().states.get(id);
@@ -284,23 +300,6 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
     setUIState(prev => ({ ...prev, isPlaying: false, chartHistory: [], selectedStateId: null }));
   }, []);
 
-  const loadEurasia = useCallback(() => {
-    fetch(`${import.meta.env.BASE_URL}eurasia.worldmap.json`)
-      .then(r => r.json())
-      .then((data: SavedCustomMap) => {
-        const tiles: MapBuilderTile[] = data.tiles.map(t => ({
-          index: t.index,
-          q: t.index % data.width,
-          r: Math.floor(t.index / data.width),
-          terrain: t.terrain,
-          productivityOverride: t.productivityOverride,
-        }));
-        const worldData = WorldGenerator.fromCustomMap(tiles, data.width, data.height);
-        loadCustomWorld(worldData);
-      })
-      .catch(err => console.error('Failed to load Eurasia map:', err));
-  }, [loadCustomWorld]);
-
   const randomizeContinents = useCallback(() => {
     randomizeContinentsHelper(settingsRef.current, loadCustomWorld);
   }, [loadCustomWorld]);
@@ -317,9 +316,8 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
       stepOnce,
       stepN,
       resetSim,
-      loadEurasia,
+      loadBuiltInMap,
       changeSettings,
-      changeSeed,
       renameState,
       saveJSON,
       loadJSON,
@@ -336,9 +334,8 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
       stepOnce,
       stepN,
       resetSim,
-      loadEurasia,
+      loadBuiltInMap,
       changeSettings,
-      changeSeed,
       renameState,
       saveJSON,
       loadJSON,

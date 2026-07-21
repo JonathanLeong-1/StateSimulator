@@ -1,8 +1,19 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSimulation } from '../SimulationContext';
 import { TipBtn } from './SimSettings/TipBtn';
 import { TipBox } from './SimSettings/TipBox';
 import styles from '../styles/SimSettings.module.css';
+
+interface DefaultMapMeta {
+  id: string;
+  name: string;
+  file: string;
+}
+
+interface DefaultMapsManifest {
+  version: number;
+  maps: DefaultMapMeta[];
+}
 
 const TIPS: Record<string, string> = {
   baseConflictRate:
@@ -28,6 +39,9 @@ const TIPS: Record<string, string> = {
 export function SimSettings() {
   const [open, setOpen] = useState(true);
   const [activeTip, setActiveTip] = useState<string | null>(null);
+  const [defaultMaps, setDefaultMaps] = useState<DefaultMapMeta[]>([]);
+  const [selectedMapId, setSelectedMapId] = useState('eurasia');
+  const [isLoadingMap, setIsLoadingMap] = useState(false);
 
   const toggleTip = (key: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -36,22 +50,33 @@ export function SimSettings() {
 
   const {
     uiState,
+    setUIState,
     changeSettings,
-    changeSeed,
     saveJSON,
     loadJSON,
     exportScreenshot,
-    loadEurasia,
+    loadBuiltInMap,
     randomizeContinents,
     resetSim,
   } = useSimulation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { settings, seed } = uiState;
+  const { settings, showEventFlashes } = uiState;
 
-  const handleSeedKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') changeSeed((e.target as HTMLInputElement).value);
-  };
+  useEffect(() => {
+    const loadManifest = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.BASE_URL}defaultMaps.json`);
+        if (!response.ok) throw new Error(`Failed to fetch manifest: ${response.status}`);
+        const manifest: DefaultMapsManifest = await response.json();
+        setDefaultMaps(manifest.maps || []);
+      } catch (err) {
+        console.error('Failed to load default maps manifest:', err);
+      }
+    };
+
+    void loadManifest();
+  }, []);
 
   const handleLoadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,6 +88,18 @@ export function SimSettings() {
     reader.readAsText(file);
   };
 
+  const handleSelectDefaultMap = async (mapId: string) => {
+    setSelectedMapId(mapId);
+    setIsLoadingMap(true);
+    try {
+      await loadBuiltInMap(mapId);
+    } catch (err) {
+      console.error(`Failed to load map ${mapId}:`, err);
+    } finally {
+      setIsLoadingMap(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header} onClick={() => setOpen(o => !o)}>
@@ -72,28 +109,30 @@ export function SimSettings() {
 
       {open && (
         <div className={styles.body}>
-          {/* Map */}
-          <div className={styles.section}>
-            <label className={styles.label}>Map</label>
+          <div className={`${styles.section} ${styles.mapSection}`}>
+            <label className={`${styles.label} ${styles.mapLabel}`}>Choose a Map</label>
+            <span className={styles.mapHint}>Start a simulation from one of the preset worlds.</span>
+            {defaultMaps.length > 0 && (
+              <select
+                className={`${styles.input} ${styles.mapSelect}`}
+                value={selectedMapId}
+                onChange={e => void handleSelectDefaultMap(e.target.value)}
+                disabled={isLoadingMap}
+              >
+                {defaultMaps.map(map => (
+                  <option key={map.id} value={map.id}>
+                    {map.name}
+                  </option>
+                ))}
+              </select>
+            )}
             <div className={styles.buttonRow}>
-              <button className={styles.btn} onClick={loadEurasia}>🗺 Eurasia</button>
               <button className={styles.btn} onClick={randomizeContinents}>🌍 Random</button>
               <button className={styles.btn} onClick={resetSim}>↺ Reset</button>
             </div>
+            {isLoadingMap && <div className={styles.label}>Loading map...</div>}
           </div>
 
-          {/* Seed */}
-          <div className={styles.section}>
-            <label className={styles.label}>Seed (Enter to apply)</label>
-            <input
-              className={styles.input}
-              defaultValue={seed}
-              onKeyDown={handleSeedKeyDown}
-              placeholder="Press Enter to apply"
-            />
-          </div>
-
-          {/* Sliders */}
           <div className={styles.section}>
             <div className={styles.labelRow}>
               <label className={styles.label}>Conflict Frequency: {settings.baseConflictRate.toFixed(2)}</label>
@@ -141,7 +180,6 @@ export function SimSettings() {
               className={styles.slider} />
           </div>
 
-          {/* Toggles */}
           <div className={styles.section}>
             <div className={styles.toggleRow}>
               <label className={styles.toggleLabel}>
@@ -182,9 +220,19 @@ export function SimSettings() {
               <TipBtn tipKey="enableDisconnectedSplit" onClick={toggleTip} />
             </div>
             <TipBox tipKey="enableDisconnectedSplit" activeTip={activeTip} tips={TIPS} />
+
+            <div className={styles.toggleRow}>
+              <label className={styles.toggleLabel}>
+                <input
+                  type="checkbox"
+                  checked={showEventFlashes}
+                  onChange={e => setUIState(prev => ({ ...prev, showEventFlashes: e.target.checked }))}
+                />
+                Show conquests and secessions
+              </label>
+            </div>
           </div>
 
-          {/* Save / Load / Export */}
           <div className={styles.section}>
             <div className={styles.buttonRow}>
               <button className={styles.btn} onClick={saveJSON}>💾 Save</button>

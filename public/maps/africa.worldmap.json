@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "Africa",
-  "savedAt": "2026-06-19T16:43:37.885Z",
+  "savedAt": "2026-06-24T20:23:52.402Z",
   "width": 235,
   "height": 272,
   "tiles": [
@@ -31302,7 +31302,7 @@
     },
     {
       "index": 6259,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
@@ -32467,17 +32467,17 @@
     },
     {
       "index": 6492,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 6493,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 6494,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
@@ -33632,22 +33632,22 @@
     },
     {
       "index": 6725,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 6726,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 6727,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 6728,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
@@ -34807,22 +34807,22 @@
     },
     {
       "index": 6960,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 6961,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 6962,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 6963,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
@@ -35982,22 +35982,22 @@
     },
     {
       "index": 7195,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 7196,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 7197,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
       "index": 7198,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
@@ -37162,7 +37162,7 @@
     },
     {
       "index": 7431,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {
@@ -37172,7 +37172,7 @@
     },
     {
       "index": 7433,
-      "terrain": "ocean",
+      "terrain": "desert",
       "productivityOverride": null
     },
     {

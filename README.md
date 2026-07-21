@@ -6,15 +6,16 @@ Inspired by research on state formation and territorial consolidation.
 
 ## Features
 
-- **Procedural world generation** — Circle-landmass default map on a 160 × 100 rectangular even-q offset hex grid (16,000 tiles) with terrain diversity (plains, forests, mountains, deserts, tundra, river valleys). A fixed-seed circular continent centered at (80, 50) with radius 38 loads on startup and on every Reset
-- **Eurasia preset** — One-click **🗺 Eurasia** button loads a hand-crafted Eurasia map (`public/eurasia.worldmap.json`) into the simulation
-- **Non-deterministic simulation runs** — Each simulation run (even on the same map) produces a unique political outcome: the RNG is seeded from `Date.now()` XOR a random integer at startup, so state colors and territorial expansion differ every time. Passing an explicit seed to `SimulationEngine` restores full determinism for reproducible results
+- **Handmade Eurasia default map** — The simulator opens on the compact handcrafted Eurasia map (`public/maps/Eurasia_handmade.json`)
+- **Built-in map selector** — Pick from 10 pre-generated regional maps directly in the left settings panel and immediately run the simulation on that world
+- **Non-deterministic simulation runs** — Each simulation run (even on the same map) produces a unique political outcome: the RNG is seeded from `Date.now()` XOR a random integer at startup, so state colors and territorial expansion differ every time
 - **Political simulation** — States conquer neighbors, secede, and split based on power, terrain, and geographic factors
 - **Sea conquest** — Coastal states can project power across oceans to nearby coastlines
 - **Voyage arc animations** — When sea conquest is enabled, animated Bézier arcs appear after each simulation step showing cross-sea attacks in the attacking state's own color; arcs fade over ~2 seconds
 - **Always-on state color overlay** — Every map mode (Political, Terrain, Productivity, Obstacle) renders a semi-transparent state color tint (`rgba` at 0.42 alpha) over each state's territory. Underlying terrain and heatmap data remain fully legible through the tint
 - **Complete state borders** — Every state frontier is enclosed by bold black border lines, including edges along coastlines. Land–ocean boundaries are now rendered the same as inter-state land borders — bold, not faint grey
 - **Edge flash animations** — Conquest and secession events produce a colored edge glow on the affected tile rather than a fill color change. Conquest glows gold (fades over 600 ms); secession glows red (fades over 800 ms)
+- **Flash visibility toggle** — The left settings panel can hide or show conquest/secession edge flashes
 - **State name labels** — Any state with 3 or more tiles displays a centered label showing the state name and its hex tile count. Labels use stroke-then-fill halo rendering for legibility on any background color. Labels are hidden when camera zoom falls below 0.5×
 - **Political map mode** — State color tint and bold borders visible by default; hovering any tile highlights the entire owning state with a subtle white overlay
 - **Pan & zoom navigation** — Both the simulation view and Map Builder support scroll-wheel zoom (centered on cursor) and always start with a full fit-to-view of the map; the simulation view also supports left mouse button drag to pan (a 5-pixel threshold distinguishes drag from click so short clicks still select states); middle/right mouse button drag pans in both views
@@ -50,8 +51,7 @@ This repository publishes the built Vite app through GitHub Pages Actions.
 | **Step** | Advance one turn (only when paused) |
 | **⏭×100** | Pause and advance exactly 100 turns in one click (fast-forward to late-game) |
 | **Reset** | Restart the simulation — returns to the circle-landmass default |
-| **🗺 Eurasia** | Load the hand-crafted Eurasia map |
-| **Seed** | Set a specific seed for reproducible worlds (press Enter to apply) |
+| **Map selector** | Load any of the 10 pre-built maps from the left settings panel |
 | **Speed** | Milliseconds between steps (50ms = fast, 2000ms = slow) |
 | **Conflict Frequency** | How often states initiate conflicts (0.1–1.0) |
 | **Sea Conquest** | Probability of sea-crossing attacks (0.0–0.5) |
@@ -62,6 +62,7 @@ This repository publishes the built Vite app through GitHub Pages Actions.
 | **Secession toggle** | Enable/disable state fragmentation |
 | **Capital Distance Unrest** | Border tiles far from capital are more likely to secede |
 | **Split Disconnected** | Isolated state enclaves form new states |
+| **Show conquests and secessions** | Show/hide the red and gold edge-flash animations |
 | **Save (💾 Save)** | Export simulation state to a JSON file |
 | **Load (📂 Load)** | Restore simulation state from a JSON file |
 | **Export Map (📷 Export)** | Download the current map view as a PNG screenshot |

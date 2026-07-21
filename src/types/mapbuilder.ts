@@ -1,11 +1,5 @@
 import type { TerrainType } from './world';
 
-export type MapBuilderTool =
-  | 'paint-land'
-  | 'paint-ocean'
-  | 'paint-biome'
-  | 'paint-productivity';
-
 export interface MapBuilderTile {
   index: number;
   q: number;
@@ -18,11 +12,11 @@ export interface MapBuilderState {
   tiles: MapBuilderTile[];
   width: number;
   height: number;
-  tool: MapBuilderTool;
   brushSize: number;            // 0–8; 0 = single hex, 1–8 = radius in hex-hops
-  selectedBiome: TerrainType;   // excludes 'ocean'
-  productivityValue: number;    // 0.0–1.0
+  selectedBiome: TerrainType;
   randomEnabled: boolean;
+  randomIntensity: number;      // 0.0–1.0 probability of using the random pool instead of the selected biome
+  randomBiomePool: TerrainType[];
   name: string;
   isDirty: boolean;
 }
